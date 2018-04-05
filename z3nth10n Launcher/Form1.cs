@@ -27,6 +27,8 @@ namespace z3nth10n_Launcher
 
         private void Form1_Shown(object sender, EventArgs e)
         {
+            Font ff = null;
+
             if (Program.IsLinux)
             {
                 PrivateFontCollection pfc = new PrivateFontCollection();
@@ -34,14 +36,19 @@ namespace z3nth10n_Launcher
                 Console.WriteLine(f);
                 pfc.AddFontFile(f);
 
-                label1.Font = new Font(pfc.Families[0], 30);
+                ff = new Font(pfc.Families[0], 30);
+                label1.Font = ff;
             }
             else
             {
                 MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
 
-                label1.Font = MemoryFonts.GetFont(0, 30);
+                ff = MemoryFonts.GetFont(0, 30);
+
+                label1.Font = ff;
             }
+
+            pictureBox1.Image = Program.DrawText("Hola", ff, Color.Red, Color.Transparent);
         }
     }
 }
