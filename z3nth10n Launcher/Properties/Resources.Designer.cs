@@ -113,9 +113,9 @@ namespace z3nth10n_Launcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] Minecraft_Regular {
+        public static byte[] Minecraft1 {
             get {
-                object obj = ResourceManager.GetObject("Minecraft_Regular", resourceCulture);
+                object obj = ResourceManager.GetObject("Minecraft1", resourceCulture);
                 return ((byte[])(obj));
             }
         }

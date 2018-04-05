@@ -81,7 +81,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <None Include="Resources\1_Minecraft-Regular.otf" />
+    <None Include="Resources\MBold.otf" />
+    <None Include="Resources\MBoldItalic.otf" />
+    <None Include="Resources\Minecraft.otf" />
     <None Include="Resources\Minecraft.ttf" />
+    <None Include="Resources\MItalic.otf" />
+    <None Include="Resources\MRegular.otf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
