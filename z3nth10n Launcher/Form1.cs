@@ -27,25 +27,9 @@ namespace z3nth10n_Launcher
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            PrivateFontCollection pfc = new PrivateFontCollection();
-
-            /*byte[] fontBytes = Properties.Resources.Minecraft_Regular;
-            IntPtr fontData = Marshal.AllocCoTaskMem(fontBytes.Length);
-
-            Marshal.Copy(fontBytes, 0, fontData, fontBytes.Length);
-            pfc.AddMemoryFont(fontData, fontBytes.Length);
-            Marshal.FreeCoTaskMem(fontData);
-
-            Console.WriteLine(pfc.Families.Length);*/
-
-            pfc.AddFontFile(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "MBold.otf"));
-
-            label1.Font = new Font(pfc.Families[0], 30);
+            MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
+            label1.Font = MemoryFonts.GetFont(0, 30);
             //label3.Font = new Font(pfc.Families[0], 15);
-        }
-
-        private void label2_Click(object sender, EventArgs e)
-        {
         }
     }
 }

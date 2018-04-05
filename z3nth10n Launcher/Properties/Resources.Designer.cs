@@ -83,6 +83,26 @@ namespace z3nth10n_Launcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] MBold {
+            get {
+                object obj = ResourceManager.GetObject("MBold", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] MBoldItalic {
+            get {
+                object obj = ResourceManager.GetObject("MBoldItalic", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] Minecraft {
             get {
                 object obj = ResourceManager.GetObject("Minecraft", resourceCulture);
@@ -96,6 +116,26 @@ namespace z3nth10n_Launcher.Properties {
         public static byte[] Minecraft_Regular {
             get {
                 object obj = ResourceManager.GetObject("Minecraft_Regular", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] MItalic {
+            get {
+                object obj = ResourceManager.GetObject("MItalic", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] MRegular {
+            get {
+                object obj = ResourceManager.GetObject("MRegular", resourceCulture);
                 return ((byte[])(obj));
             }
         }

@@ -1,7 +1,6 @@
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\z3nth10n Launcher.exe.config
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\z3nth10n Launcher.exe
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\z3nth10n Launcher.pdb
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.csprojResolveAssemblyReference.cache
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n_Launcher.Form1.resources
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n_Launcher.Properties.Resources.resources
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.csproj.GenerateResource.Cache
