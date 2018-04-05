@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using System.Security.Cryptography;
 
 namespace z3nth10n_Launcher
 {
@@ -34,13 +35,31 @@ namespace z3nth10n_Launcher
 
             using (WebClient wc = new WebClient())
             {
-                byte[] by = wc.DownloadData(url);
+                byte[] by = wc.DownloadData(url),
+                       mychecksum = null;
+                string[] arr = Directory.GetFiles(fold);
 
-                fil = Path.Combine(fold, string.Format("file{0}.{1}",
-                                            Directory.GetFiles(fold).Length,
+                fil = Path.Combine(fold, string.Format("file{0}{1}",
+                                            arr.Length,
                                             MimeTypeMap.GetExtension(GetContentType(url))));
-
+                
                 File.WriteAllBytes(fil, by);
+
+                //Remove repeated files
+                using (var md5 = MD5.Create())
+                {
+                    using (var stream = File.OpenRead(fil))
+                        mychecksum = md5.ComputeHash(stream);
+
+                    foreach(string ff in arr)
+                    using (var stream = File.OpenRead(ff))
+                        if (md5.ComputeHash(stream) == mychecksum) 
+                        {
+                            File.Delete(fil);
+                            fil = ff;
+                            break;
+                        }
+                }
             }
 
             if (string.IsNullOrEmpty(fil))

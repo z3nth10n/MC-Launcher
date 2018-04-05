@@ -27,19 +27,18 @@ namespace z3nth10n_Launcher
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            if (Program.IsRunningOnMono())
-            {
+#if MONO
                 PrivateFontCollection pfc = new PrivateFontCollection();
-                pfc.AddFontFile(Program.URLToLocalFile("https://github.com/z3nth10n/MC-Launcher/raw/master/z3nth10n%20Launcher/Resources/MBold.otf"));
+            string f = Program.URLToLocalFile("https://github.com/z3nth10n/MC-Launcher/raw/master/z3nth10n%20Launcher/Resources/MBold.otf");
+            Console.WriteLine(f);
+                pfc.AddFontFile(f);
 
                 label1.Font = new Font(pfc.Families[0], 30);
-            }
-            else
-            {
+#else
                 MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
 
                 label1.Font = MemoryFonts.GetFont(0, 30);
-            }
+#endif
         }
     }
 }
