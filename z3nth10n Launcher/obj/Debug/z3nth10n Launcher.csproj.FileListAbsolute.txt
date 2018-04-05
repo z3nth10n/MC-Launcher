@@ -7,4 +7,4 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.csproj.CoreCompileInputs.cache
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.exe
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.pdb
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\Debug\z3nth10n Launcher.csprojResolveAssemblyReference.cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\MimeTypeMap.dll

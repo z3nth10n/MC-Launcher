@@ -40,7 +40,6 @@ namespace z3nth10n_Launcher
 
                 label1.Font = MemoryFonts.GetFont(0, 30);
             }
-            //label3.Font = new Font(pfc.Families[0], 15);
         }
     }
 }

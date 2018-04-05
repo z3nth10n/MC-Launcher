@@ -1,10 +1,7 @@
 ﻿using MimeTypes;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace z3nth10n_Launcher
@@ -29,22 +26,43 @@ namespace z3nth10n_Launcher
 
         public static string URLToLocalFile(string url)
         {
-            string fold = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)),
-                   fil = Path.Combine(fold, string.Format("file{0}.{1}", Directory.GetFiles(fold).Length, GetURLExtension(url)));
-            if (!Directory.Exists(fold)) Directory.CreateDirectory(fold);
+            string fold = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher"),
+                   fil = "";
+
+            if (!Directory.Exists(fold))
+                Directory.CreateDirectory(fold);
+
             using (WebClient wc = new WebClient())
-                wc.DownloadFile(url, fil);
+            {
+                byte[] by = wc.DownloadData(url);
+
+                fil = Path.Combine(fold, string.Format("file{0}.{1}",
+                                            Directory.GetFiles(fold).Length,
+                                            MimeTypeMap.GetExtension(GetContentType(url))));
+
+                File.WriteAllBytes(fil, by);
+            }
+
+            if (string.IsNullOrEmpty(fil))
+                throw new Exception("Coudn't retrieve file name.");
+
             return fil;
         }
 
-        public static string GetURLExtension(string url)
+        private static string GetContentType(string url)
         {
-            using (WebClient client = new WebClient())
+            string contentType = "";
+
+            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+            if (request != null)
             {
-                string data = client.DownloadString(url),
-                       contentType = client.Headers["Content-Type"];
-                return MimeTypeMap.GetExtension(contentType);
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+
+                if (response != null)
+                    contentType = response.ContentType;
             }
+
+            return contentType;
         }
     }
 }
