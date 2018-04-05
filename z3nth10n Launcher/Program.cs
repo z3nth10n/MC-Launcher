@@ -20,9 +20,13 @@ namespace z3nth10n_Launcher
             Application.Run(new Form1());
         }
 
-        public static bool IsRunningOnMono()
+        public static bool IsLinux
         {
-            return Type.GetType("Mono.Runtime") != null;
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
         }
 
         public static string URLToLocalFile(string url)
