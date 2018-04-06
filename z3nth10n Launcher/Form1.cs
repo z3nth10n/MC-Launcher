@@ -37,6 +37,8 @@ namespace z3nth10n_Launcher
 
                 pictureBox1.Image = Program.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
             }
+
+            lblNotifications.Text = "";
         }
 
         private void Form1_Shown(object sender, EventArgs e)

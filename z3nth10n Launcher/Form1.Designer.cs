@@ -40,6 +40,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.button4 = new System.Windows.Forms.Button();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.lblNotifications = new System.Windows.Forms.Label();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
@@ -178,12 +179,25 @@
             this.pictureBox1.TabIndex = 2;
             this.pictureBox1.TabStop = false;
             // 
+            // lblNotifications
+            // 
+            this.lblNotifications.BackColor = System.Drawing.Color.Transparent;
+            this.lblNotifications.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.lblNotifications.ForeColor = System.Drawing.Color.Red;
+            this.lblNotifications.Location = new System.Drawing.Point(12, 449);
+            this.lblNotifications.Name = "lblNotifications";
+            this.lblNotifications.Size = new System.Drawing.Size(830, 23);
+            this.lblNotifications.TabIndex = 6;
+            this.lblNotifications.Text = "Error messages and so on";
+            this.lblNotifications.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::z3nth10n_Launcher.Properties.Resources.dirt;
             this.ClientSize = new System.Drawing.Size(854, 481);
+            this.Controls.Add(this.lblNotifications);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.button4);
@@ -214,6 +228,7 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ComboBox comboBox1;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Label lblNotifications;
         //private System.Windows.Forms.WebBrowser webBrowser1;
     }
 }
