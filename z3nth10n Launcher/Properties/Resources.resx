@@ -142,7 +142,4 @@
   <data name="MRegular" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\MRegular.otf;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="launcher" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\launcher.html;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
-  </data>
 </root>

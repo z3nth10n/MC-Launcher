@@ -5,11 +5,15 @@ using System.Net;
 using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.Drawing;
+using Timer = System.Threading.Timer;
 
 namespace z3nth10n_Launcher
 {
     internal static class Program
     {
+        private static Timer timer;
+        private static bool _off, chk;
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
@@ -19,6 +23,9 @@ namespace z3nth10n_Launcher
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
+
+            //Chk conn
+            timer = new Timer(ChkConn, null, 0, 1000 * 5 * 60);
         }
 
         public static bool IsLinux
@@ -27,6 +34,40 @@ namespace z3nth10n_Launcher
             {
                 int p = (int)Environment.OSVersion.Platform;
                 return (p == 4) || (p == 6) || (p == 128);
+            }
+        }
+
+        public static bool OfflineMode
+        {
+            get
+            {
+                if (!chk)
+                {
+                    _off = !CheckForInternetConnection();
+                    chk = true;
+                }
+                return _off;
+            }
+        }
+
+        private static void ChkConn(object objState)
+        {
+            if (chk) chk = false;
+        }
+
+        public static bool CheckForInternetConnection()
+        {
+            try
+            {
+                using (var client = new WebClient())
+                using (client.OpenRead("http://clients3.google.com/generate_204"))
+                {
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
@@ -50,7 +91,7 @@ namespace z3nth10n_Launcher
 
                 File.WriteAllBytes(fil, by);
 
-                //Remove repeated files
+                //Remove repeated files, esto no funca
                 using (var md5 = MD5.Create())
                 {
                     using (var stream = File.OpenRead(fil))

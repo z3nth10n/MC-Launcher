@@ -71,6 +71,7 @@
             this.label3.Size = new System.Drawing.Size(48, 16);
             this.label3.TabIndex = 10;
             this.label3.Text = "Profile:";
+            this.label3.Visible = false;
             // 
             // comboBox1
             // 
@@ -79,6 +80,7 @@
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(180, 21);
             this.comboBox1.TabIndex = 9;
+            this.comboBox1.Visible = false;
             this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
             // label4
@@ -101,6 +103,7 @@
             this.button6.TabIndex = 7;
             this.button6.Text = "Backup Manager";
             this.button6.UseVisualStyleBackColor = false;
+            this.button6.Visible = false;
             // 
             // button5
             // 
@@ -123,6 +126,7 @@
             this.button2.TabIndex = 3;
             this.button2.Text = "See Profiles";
             this.button2.UseVisualStyleBackColor = false;
+            this.button2.Visible = false;
             // 
             // button1
             // 

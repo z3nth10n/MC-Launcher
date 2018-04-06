@@ -122,7 +122,6 @@
   <ItemGroup>
     <Content Include="Resources\dirt.png" />
     <Content Include="Resources\favicon.png" />
-    <None Include="Resources\launcher.html" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MimeTypeMap">

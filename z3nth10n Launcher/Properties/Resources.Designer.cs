@@ -81,24 +81,6 @@ namespace z3nth10n_Launcher.Properties {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to &lt;!DOCTYPE html&gt;
-        ///&lt;html lang=&quot;en&quot;&gt;
-        ///&lt;head&gt;
-        ///    &lt;meta charset=&quot;UTF-8&quot;&gt;
-        ///    &lt;title&gt;Document&lt;/title&gt;
-        ///&lt;/head&gt;
-        ///&lt;body&gt;
-        ///    Hola
-        ///&lt;/body&gt;
-        ///&lt;/html&gt;.
-        /// </summary>
-        public static string launcher {
-            get {
-                return ResourceManager.GetString("launcher", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] MBold {
