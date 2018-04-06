@@ -1,15 +1,23 @@
 ﻿using Ionic.Zip;
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
+using System.Media;
 using System.Windows.Forms;
 
 namespace z3nth10n_Launcher
 {
     public partial class Form1 : Form
     {
+        private static string minecraftJAR
+        {
+            get
+            {
+                return Path.Combine(Program.AssemblyPATH, "minecraft.jar");
+            }
+        }
+
         public Form1()
         {
             InitializeComponent();
@@ -64,22 +72,38 @@ namespace z3nth10n_Launcher
 
         private static bool CheckValidJar()
         {
-            string minecraftJAR = Path.Combine(Program.AssemblyPATH, "minecraft.jar");
-
             if (!File.Exists(minecraftJAR)) return false;
+            else if (!Program.AssemblyPATH.Contains("bin")) return false;
 
             using (FileStream fs = new FileStream(minecraftJAR, FileMode.Open))
             {
                 //List<String> classNames = new List<string>();
                 ZipInputStream zip = new ZipInputStream(fs);
                 for (ZipEntry entry = zip.GetNextEntry(); entry != null; entry = zip.GetNextEntry())
-                    if (!entry.IsDirectory && entry.FileName.EndsWith(".class"))
-                    {
-                        Console.WriteLine(entry.FileName);
-                    }
+                    if (!entry.IsDirectory && entry.FileName == "net/minecraft/client/main/Main.class")
+                        return true;
             }
 
-            return true;
+            return false;
+        }
+
+        private DateTime lastTime = DateTime.Now;
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if ((DateTime.Now - lastTime).TotalMilliseconds > 2000)
+            {
+                if (string.IsNullOrWhiteSpace(txtUsername.Text))
+                {
+                    lblNotifications.Text = "You have to specify an username!!";
+                    Program.Shake(this);
+
+                    using (Stream s = Properties.Resources.sound101)
+                        (new SoundPlayer(s)).Play();
+                }
+
+                lastTime = DateTime.Now;
+            }
         }
     }
 }

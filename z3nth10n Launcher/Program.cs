@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using System.Drawing;
 using Timer = System.Threading.Timer;
 using System.Reflection;
+using System.Media;
 
 namespace z3nth10n_Launcher
 {
@@ -199,6 +200,28 @@ namespace z3nth10n_Launcher
             drawing.Dispose();
 
             return img;
+        }
+
+        public static void Shake(Form form)
+        {
+            var original = form.Location;
+            var rnd = new Random();
+            const int shake_amplitude = 10;
+            for (int i = 0; i < 10; i++)
+            {
+                form.Location = new Point(original.X + rnd.Next(-shake_amplitude, shake_amplitude), original.Y + rnd.Next(-shake_amplitude, shake_amplitude));
+                System.Threading.Thread.Sleep(20);
+            }
+            form.Location = original;
+        }
+
+        public static void SoundBytes(byte[] arr)
+        {
+            using (MemoryStream ms = new MemoryStream(arr))
+            {
+                SoundPlayer simpleSound = new SoundPlayer(ms);
+                simpleSound.Play();
+            }
         }
     }
 }

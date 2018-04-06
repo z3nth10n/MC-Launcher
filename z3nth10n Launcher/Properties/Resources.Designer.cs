@@ -139,5 +139,14 @@ namespace z3nth10n_Launcher.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        public static System.IO.UnmanagedMemoryStream sound101 {
+            get {
+                return ResourceManager.GetStream("sound101", resourceCulture);
+            }
+        }
     }
 }
