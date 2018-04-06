@@ -92,8 +92,3 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.csproj.CoreCompileInputs.cache
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.exe
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.pdb
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.csprojResolveAssemblyReference.cache
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\Awesomium.Core.dll
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\Awesomium.Windows.Forms.dll
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\HtmlRenderer.dll
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\HtmlRenderer.pdb
