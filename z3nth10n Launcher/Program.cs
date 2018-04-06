@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Security.Cryptography;
 using System.Drawing;
 using Timer = System.Threading.Timer;
+using System.Reflection;
 
 namespace z3nth10n_Launcher
 {
@@ -33,6 +34,14 @@ namespace z3nth10n_Launcher
             get
             {
                 return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher");
+            }
+        }
+
+        public static string AssemblyPATH
+        {
+            get
+            {
+                return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             }
         }
 

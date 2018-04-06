@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Ionic.Zip;
+using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
@@ -17,9 +19,18 @@ namespace z3nth10n_Launcher
         {
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            if (!Program.OfflineMode || Program.IsLinux)
-                pictureBox1.Load("http://localhost/z3nth10n/logo.php");
-            else
+            bool _off = !Program.OfflineMode || Program.IsLinux;
+            if (_off)
+                try
+                {
+                    pictureBox1.Load("http://localhost/z3nth10n-PHP/logo.php");
+                }
+                catch
+                {
+                    _off = false;
+                }
+
+            if (!_off)
             {
                 Font ff = null;
 
@@ -38,7 +49,7 @@ namespace z3nth10n_Launcher
                 pictureBox1.Image = Program.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
             }
 
-            lblNotifications.Text = "";
+            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
         }
 
         private void Form1_Shown(object sender, EventArgs e)
@@ -47,6 +58,28 @@ namespace z3nth10n_Launcher
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
+        }
+
+        //Funcs
+
+        private static bool CheckValidJar()
+        {
+            string minecraftJAR = Path.Combine(Program.AssemblyPATH, "minecraft.jar");
+
+            if (!File.Exists(minecraftJAR)) return false;
+
+            using (FileStream fs = new FileStream(minecraftJAR, FileMode.Open))
+            {
+                //List<String> classNames = new List<string>();
+                ZipInputStream zip = new ZipInputStream(fs);
+                for (ZipEntry entry = zip.GetNextEntry(); entry != null; entry = zip.GetNextEntry())
+                    if (!entry.IsDirectory && entry.FileName.EndsWith(".class"))
+                    {
+                        Console.WriteLine(entry.FileName);
+                    }
+            }
+
+            return true;
         }
     }
 }
