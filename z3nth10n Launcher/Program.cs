@@ -28,6 +28,14 @@ namespace z3nth10n_Launcher
             timer = new Timer(ChkConn, null, 0, 1000 * 5 * 60);
         }
 
+        public static string LocalPATH
+        {
+            get
+            {
+                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher");
+            }
+        }
+
         public static bool IsLinux
         {
             get
@@ -71,21 +79,41 @@ namespace z3nth10n_Launcher
             }
         }
 
-        public static string URLToLocalFile(string url)
+        public static bool PreviousChk(string path)
         {
-            string fold = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher"),
-                   fil = "";
-
+            string fold = Path.GetDirectoryName(path);
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
+
+            if (File.Exists(path))
+                return false;
+
+            return true;
+        }
+
+        public static void UrlToLocalFile(string url, string path)
+        {
+            if (!PreviousChk(path))
+                return;
+
+            using (WebClient wc = new WebClient())
+                wc.DownloadFile(url, path);
+        }
+
+        public static string URLToLocalFile(string url)
+        {
+            string fil = "";
+
+            if (!Directory.Exists(LocalPATH))
+                Directory.CreateDirectory(LocalPATH);
 
             using (WebClient wc = new WebClient())
             {
                 byte[] by = wc.DownloadData(url),
                        mychecksum = null;
-                string[] arr = Directory.GetFiles(fold);
+                string[] arr = Directory.GetFiles(LocalPATH);
 
-                fil = Path.Combine(fold, string.Format("file{0}{1}",
+                fil = Path.Combine(LocalPATH, string.Format("file{0}{1}",
                                             arr.Length,
                                             MimeTypeMap.GetExtension(GetContentType(url))));
 
