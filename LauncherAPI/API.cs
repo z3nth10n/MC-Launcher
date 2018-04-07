@@ -196,7 +196,7 @@ Func<T, bool> action)
 
         public static bool PreviousChk(string path)
         {
-            bool isf = File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+            bool isf = Directory.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.Directory);
             string fold = isf ? path : Path.GetDirectoryName(path);
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
@@ -311,7 +311,7 @@ Func<T, bool> action)
             }
         }
 
-        public static void DownloadFile(string url, string path, bool overwrite = false)
+        public static void DownloadFile(string path, string url, bool overwrite = false)
         {
             if (PreviousChk(path) || overwrite)
             {
@@ -320,6 +320,28 @@ Func<T, bool> action)
             }
             else
                 Console.WriteLine("File already exists!");
+        }
+
+        public static void WriteLineStop(string val = "")
+        {
+            WriteLineStop(val, null);
+        }
+
+        public static void WriteLineStop(string val, params object[] objs)
+        {
+            Console.WriteLine(val, objs);
+            Console.Read();
+        }
+
+        public static void WriteStop(string val = "")
+        {
+            WriteStop(val, null);
+        }
+
+        public static void WriteStop(string val, params object[] objs)
+        {
+            Console.Write(val, objs);
+            Console.Read();
         }
     }
 }

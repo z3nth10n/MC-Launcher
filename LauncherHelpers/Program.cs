@@ -1,4 +1,5 @@
 ﻿using LauncherAPI;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -118,7 +119,7 @@ namespace LauncherHelpers
                     case 2:
                         if (!File.Exists(fversion))
                         {
-                            Console.WriteLine("Please, you must generate fversion file, to do this you have to select option 1.");
+                            API.WriteLineStop("Please, you must generate fversion file, to do this you have to select option 1.");
                             App();
                             return;
                         }
@@ -254,9 +255,36 @@ namespace LauncherHelpers
                         string selVersion = "";
                         if (File.Exists(API.Base64PATH))
                         {
-                            Console.WriteLine(File.ReadAllText(API.Base64PATH));
-                            JObject jObject = JObject.Parse(File.ReadAllText(API.Base64PATH + ".json"));
-                            Console.WriteLine(jObject.Type);
+                            JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(API.Base64PATH));
+                            if (jArr.Count == 1)
+                                selVersion = jArr[0]["version"].ToString();
+                            else
+                            {
+                                Console.WriteLine("There are several files in this folder, please select one of them:");
+                                Console.WriteLine();
+
+                                int i = 1;
+                                Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
+                                foreach (var entry in filver)
+                                {
+                                    Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
+                                    ++i;
+                                }
+
+                                Console.WriteLine();
+                                Console.Write("Select one of them: ");
+                                string opt1 = Console.ReadLine();
+
+                                int num = 0;
+                                if (int.TryParse(opt1, out num))
+                                    selVersion = filver.ElementAt(num - 1).Value;
+                                else
+                                {
+                                    API.WriteLineStop("Please specify a numeric value.");
+                                    App();
+                                    return;
+                                }
+                            }
                         }
                         else
                         {
@@ -268,8 +296,7 @@ namespace LauncherHelpers
                                 selVersion = version;
                             else
                             {
-                                Console.WriteLine("Unrecognized versions, please restart...");
-                                Console.Read();
+                                API.WriteLineStop("Unrecognized versions, please restart...");
                                 App();
                                 return;
                             }
@@ -317,14 +344,14 @@ namespace LauncherHelpers
                         break;
 
                     default:
-                        Console.WriteLine("Invalid option!");
+                        API.WriteLineStop("Invalid option!");
                         App();
                         return;
                 }
             }
             else
             {
-                Console.WriteLine("Please specify a numeric value.");
+                API.WriteLineStop("Please specify a numeric value.");
                 App();
                 return;
             }
