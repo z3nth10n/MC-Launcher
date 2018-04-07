@@ -148,37 +148,4 @@
   <data name="sound101" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\sound101.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="jinput_dx8" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\jinput-dx8.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="jinput_dx8_64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\jinput-dx8_64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="jinput_raw" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\jinput-raw.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="jinput_raw_64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\jinput-raw_64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="jinput_wintab" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\jinput-wintab.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="lwjgl" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\lwjgl.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="lwjgl64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\lwjgl64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="OpenAL32" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\OpenAL32.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="OpenAL64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\OpenAL64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="SAPIWrapper_x64" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SAPIWrapper_x64.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="SAPIWrapper_x86" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\SAPIWrapper_x86.dll;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
 </root>

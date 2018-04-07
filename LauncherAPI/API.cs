@@ -7,11 +7,15 @@ using System.IO;
 using System.Media;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
+using System.Text;
 using System.Windows.Forms;
 
 namespace LauncherAPI
 {
+    public enum OS { Windows, Linux, OSx, Other }
+
     public static class API
     {
         private static bool _off, chk;
@@ -57,6 +61,18 @@ Func<T, bool> action)
                 return val > min && val < max;
         }
 
+        public static OS GetSO()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return OS.Linux;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return OS.Windows;
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return OS.OSx;
+            else
+                return OS.Other;
+        }
+
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             object v = null;
@@ -98,11 +114,32 @@ Func<T, bool> action)
             return v;
         }
 
+        public static string Base64PATH
+        {
+            get
+            {
+                byte[] arr = Encoding.UTF8.GetBytes(Assembly.GetExecutingAssembly().Location);
+                string path = Path.Combine(LocalPATH, "Base64");
+
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
+                path = Path.Combine(path, Convert.ToBase64String(arr));
+
+                return path;
+            }
+        }
+
         public static string LocalPATH
         {
             get
             {
-                return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher");
+                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher");
+
+                if (!Directory.Exists(path))
+                    Directory.CreateDirectory(path);
+
+                return path;
             }
         }
 
@@ -159,11 +196,12 @@ Func<T, bool> action)
 
         public static bool PreviousChk(string path)
         {
-            string fold = Path.GetDirectoryName(path);
+            bool isf = File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+            string fold = isf ? path : Path.GetDirectoryName(path);
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
 
-            if (File.Exists(path))
+            if (!isf && File.Exists(path))
                 return false;
 
             return true;
@@ -181,9 +219,6 @@ Func<T, bool> action)
         public static string URLToLocalFile(string url)
         {
             string fil = "";
-
-            if (!Directory.Exists(LocalPATH))
-                Directory.CreateDirectory(LocalPATH);
 
             using (WebClient wc = new WebClient())
             {
@@ -290,6 +325,17 @@ Func<T, bool> action)
                 SoundPlayer simpleSound = new SoundPlayer(ms);
                 simpleSound.Play();
             }
+        }
+
+        public static void DownloadFile(string url, string path, bool overwrite = false)
+        {
+            if (PreviousChk(path) || overwrite)
+            {
+                using (WebClient wc = new WebClient())
+                    File.WriteAllBytes(path, wc.DownloadData(url));
+            }
+            else
+                Console.WriteLine("File already exists!");
         }
     }
 }

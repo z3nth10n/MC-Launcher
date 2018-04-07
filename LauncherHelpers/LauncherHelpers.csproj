@@ -8,9 +8,10 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>LauncherHelpers</RootNamespace>
     <AssemblyName>LauncherHelpers</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,7 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LauncherAPI\LauncherAPI.csproj">
@@ -73,37 +76,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\lwjgl64.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\OpenAL32.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\OpenAL64.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\SAPIWrapper_x64.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\SAPIWrapper_x86.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\jinput-dx8.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\jinput-dx8_64.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\jinput-raw.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\jinput-raw_64.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\jinput-wintab.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\lwjgl.dll" />
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

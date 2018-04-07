@@ -12,13 +12,18 @@ namespace LauncherHelpers
     {
         private static void Main(string[] args)
         {
-            App();
+            App(false, true);
             Console.WriteLine("Press any key to exit...");
             Console.Read();
         }
 
-        private static void App()
+        private static void App(bool clear = true, bool main = false)
         {
+            if (clear)
+                Console.Clear();
+            else if (!clear && !main)
+                Console.WriteLine();
+
             Console.WriteLine("1.- Generate weights from versions");
             Console.WriteLine("2.- Try to identify a version");
             Console.WriteLine("3.- Download JSONs, libraries and natives");
@@ -32,6 +37,11 @@ namespace LauncherHelpers
             if (int.TryParse(c, out opt))
             {
                 string fversion = Path.Combine(API.AssemblyPATH, "fversion.json");
+
+                //Prepare objects
+                JObject jobj = JObject.Parse(File.ReadAllText(fversion));
+                IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
+
                 switch (opt)
                 {
                     case 1:
@@ -113,10 +123,6 @@ namespace LauncherHelpers
                             return;
                         }
 
-                        //Prepare objects
-                        JObject jobj = JObject.Parse(File.ReadAllText(fversion));
-                        IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
-
                         Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
 
                         //Start parsing...
@@ -128,6 +134,9 @@ namespace LauncherHelpers
                         Console.WriteLine("There are {0} valid versions: {1}", files.Count(), string.Join(", ", files.Select(x => x.Name)));
                         Console.WriteLine();
 
+                        string retobj = null;
+                        JArray jArray = new JArray();
+
                         foreach (FileInfo file in files)
                         {
                             //Console.WriteLine("Parsing file: {0}; Ext: {1}", file.Name, file.Extension);
@@ -136,6 +145,8 @@ namespace LauncherHelpers
                             if (rvers.Contains(woutext))
                             {
                                 Console.WriteLine("Found recognized version: {0}", woutext);
+
+                                jArray.Add(AddObject(file.Name, woutext));
                                 continue;
                             }
 
@@ -165,6 +176,8 @@ namespace LauncherHelpers
                                     if (weights.Count == 1)
                                     { //Aqui devolvemos la key del elemento 0
                                         Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
+
+                                        jArray.Add(AddObject(file.Name, weights.ElementAt(0).Key));
                                     }
                                     else if (weights.Count > 1)
                                     {
@@ -172,25 +185,27 @@ namespace LauncherHelpers
                                         weights.ForEach((x) =>
                                         {
                                             Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
+
+                                            //We have to discard, because we want only one result from DeeperSearch...
+                                            //If filename is not empty that means we want to dump into a file
+                                            //if (!string.IsNullOrEmpty(file.Name))
+                                            //    jArray.Add(new JObject(new JProperty("filename", file.Name), new JProperty("version", x.Key)));
                                         });
 
                                         Console.WriteLine();
                                         Console.WriteLine("Searching for a maching version...");
                                         Console.WriteLine();
 
-                                        DeeperSearch(file, weights.Keys.AsEnumerable());
+                                        jArray.Add(DeeperSearch(file, weights.Keys.AsEnumerable(), true));
                                     }
                                     else
                                     {
                                         Console.WriteLine("Your Minecraft JAR has changed a lot to be recognized as any established version, by this reason, we will make a deeper search... (Weight: {0})", file.Length);
                                         Console.WriteLine();
-                                        //Aqui lo que podemos es leer el JAR entero y ver si localizamos una string en concreto
-                                        //Aunque es raro que el minecraft-.jar esté aqui
+                                        //Raro que el minecraft-.jar esté aqui
 
-                                        DeeperSearch(file, rvers);
+                                        jArray.Add(DeeperSearch(file, rvers, true));
                                     }
-
-                                    //Aqui ya seria cuestion de devolver el weights tal cual para hacer lo que se necesite con la identificación, o incluso darle a elegir al usuario si hubiese mas de una opcion
                                 }
                                 else
                                 {
@@ -215,6 +230,8 @@ namespace LauncherHelpers
                                     }, (item) => true);
 
                                     MsgValidKey(validKey);
+
+                                    jArray.Add(AddObject(file.Name, validKey));
                                 }
                             }
                             catch (Exception ex)
@@ -223,9 +240,75 @@ namespace LauncherHelpers
                                 Console.WriteLine(ex);
                             }
                         }
+
+                        if (jArray != null)
+                        {
+                            retobj = jArray.ToString();
+                            File.WriteAllText(API.Base64PATH + ".json", retobj);
+                        }
                         break;
 
                     case 3:
+                        //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
+
+                        string selVersion = "";
+                        if (File.Exists(API.Base64PATH + ".json"))
+                        {
+                            JObject jObject = JObject.Parse(File.ReadAllText(API.Base64PATH + ".json"));
+                            Console.WriteLine(jObject.Type);
+                        }
+                        else
+                        {
+                            //Introducir version manualmente
+                            Console.Write("There isn't any reference, write a recognized version: ");
+                            string version = Console.ReadLine();
+
+                            if (rvers.Contains(version))
+                                selVersion = version;
+                            else
+                            {
+                                Console.WriteLine("Unrecognized versions, please restart...");
+                                Console.Read();
+                                App();
+                                return;
+                            }
+                        }
+
+                        //Then, start downloading...
+
+                        string nativesDir = Path.Combine(API.AssemblyPATH, "natives");
+                        API.PreviousChk(nativesDir);
+
+                        //Generate natives
+                        switch (API.GetSO())
+                        {
+                            case OS.Windows:
+                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
+
+                                //JInput
+
+                                //WinTab case
+
+                                if (Environment.Is64BitOperatingSystem)
+                                    API.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
+                                else
+                                    API.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
+
+                                //SAPIWrapper only if version is 1.12.2 or newer...
+                                break;
+
+                            case OS.Linux:
+                                break;
+
+                            case OS.OSx:
+                                break;
+                        }
+
+                        //Generate libraries
+
                         break;
 
                     case 4:
@@ -246,7 +329,7 @@ namespace LauncherHelpers
             }
         }
 
-        private static void DeeperSearch(FileInfo file, IEnumerable<string> col)
+        private static JObject DeeperSearch(FileInfo file, IEnumerable<string> col, bool dump = false)
         {
             string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
             {
@@ -268,6 +351,11 @@ namespace LauncherHelpers
             });
 
             MsgValidKey(validKey, col);
+
+            if (dump)
+                return AddObject(file.Name, validKey);
+            else
+                return null;
         }
 
         private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
@@ -278,6 +366,11 @@ namespace LauncherHelpers
                 Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
 
             Console.WriteLine();
+        }
+
+        private static JObject AddObject(string filename, string version)
+        {
+            return new JObject(new JProperty("filename", filename), new JProperty("version", version));
         }
     }
 }

@@ -9,11 +9,12 @@
     <OutputType>WinExe</OutputType>
     <RootNamespace>z3nth10n_Launcher</RootNamespace>
     <AssemblyName>z3nth10n Launcher</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -123,17 +124,6 @@
   <ItemGroup>
     <Content Include="Resources\dirt.png" />
     <Content Include="Resources\favicon.png" />
-    <None Include="Resources\jinput-wintab.dll" />
-    <None Include="Resources\jinput-raw_64.dll" />
-    <None Include="Resources\jinput-raw.dll" />
-    <None Include="Resources\jinput-dx8_64.dll" />
-    <None Include="Resources\jinput-dx8.dll" />
-    <None Include="Resources\SAPIWrapper_x86.dll" />
-    <None Include="Resources\SAPIWrapper_x64.dll" />
-    <None Include="Resources\OpenAL64.dll" />
-    <None Include="Resources\OpenAL32.dll" />
-    <None Include="Resources\lwjgl64.dll" />
-    <None Include="Resources\lwjgl.dll" />
     <None Include="Resources\sound101.wav" />
   </ItemGroup>
   <ItemGroup>
