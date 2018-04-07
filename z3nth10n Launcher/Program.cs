@@ -1,8 +1,7 @@
-﻿using System;
+﻿using LauncherAPI;
+using System;
 using System.Windows.Forms;
 using Timer = System.Threading.Timer;
-using System.Collections.Generic;
-using LauncherAPI;
 
 namespace z3nth10n_Launcher
 {
