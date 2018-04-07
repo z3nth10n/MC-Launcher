@@ -83,6 +83,16 @@ namespace z3nth10n_Launcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        public static byte[] fversion {
+            get {
+                object obj = ResourceManager.GetObject("fversion", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         public static byte[] MBold {
             get {
                 object obj = ResourceManager.GetObject("MBold", resourceCulture);

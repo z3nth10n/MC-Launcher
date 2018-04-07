@@ -1,0 +1,13 @@
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\LauncherHelpers.exe.config
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\LauncherHelpers.exe
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\LauncherHelpers.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\Newtonsoft.Json.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\Newtonsoft.Json.xml
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.csprojResolveAssemblyReference.cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.csproj.CoreCompileInputs.cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.exe
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\ICSharpCode.SharpZipLib.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\LauncherAPI.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\LauncherAPI.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\MimeTypeMap.dll

@@ -1,0 +1,8 @@
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\LauncherAPI.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\LauncherAPI.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\ICSharpCode.SharpZipLib.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\obj\Debug\LauncherAPI.csproj.CoreCompileInputs.cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\obj\Debug\LauncherAPI.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\obj\Debug\LauncherAPI.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\MimeTypeMap.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\obj\Debug\LauncherAPI.csprojResolveAssemblyReference.cache

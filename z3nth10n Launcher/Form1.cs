@@ -1,4 +1,4 @@
-﻿using Ionic.Zip;
+﻿using LauncherAPI;
 using System;
 using System.Drawing;
 using System.Drawing.Text;
@@ -14,7 +14,7 @@ namespace z3nth10n_Launcher
         {
             get
             {
-                return Path.Combine(Program.AssemblyPATH, "minecraft.jar");
+                return Path.Combine(API.AssemblyPATH, "minecraft.jar");
             }
         }
 
@@ -27,7 +27,7 @@ namespace z3nth10n_Launcher
         {
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            bool _off = !Program.OfflineMode || Program.IsLinux;
+            bool _off = !API.OfflineMode || API.IsLinux;
             if (_off)
                 try
                 {
@@ -42,9 +42,9 @@ namespace z3nth10n_Launcher
             {
                 Font ff = null;
 
-                string f = Path.Combine(Program.LocalPATH, "Minecraft.otf");
+                string f = Path.Combine(API.LocalPATH, "Minecraft.otf");
 
-                if (Program.PreviousChk(f))
+                if (API.PreviousChk(f))
                     File.WriteAllBytes(f, Properties.Resources.MBold);
 
                 PrivateFontCollection pfc = new PrivateFontCollection();
@@ -54,7 +54,7 @@ namespace z3nth10n_Launcher
 
                 ff = new Font(pfc.Families[0], 30);
 
-                pictureBox1.Image = Program.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                pictureBox1.Image = API.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
             }
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
@@ -73,18 +73,25 @@ namespace z3nth10n_Launcher
         private static bool CheckValidJar()
         {
             if (!File.Exists(minecraftJAR)) return false;
-            else if (!Program.AssemblyPATH.Contains("bin")) return false;
+            else if (!API.AssemblyPATH.Contains("bin") || !API.AssemblyPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
 
-            using (FileStream fs = new FileStream(minecraftJAR, FileMode.Open))
+            bool isValid = false;
+            API.ReadJAR(minecraftJAR, (zipfile, entry, valid) =>
             {
-                //List<String> classNames = new List<string>();
-                ZipInputStream zip = new ZipInputStream(fs);
-                for (ZipEntry entry = zip.GetNextEntry(); entry != null; entry = zip.GetNextEntry())
-                    if (!entry.IsDirectory && entry.FileName == "net/minecraft/client/main/Main.class")
-                        return true;
-            }
+                //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
+                //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
 
-            return false;
+                if (valid)
+                {
+                    isValid = valid;
+                    return true;
+                }
+
+                return false;
+            });
+
+            return isValid;
         }
 
         private DateTime lastTime = DateTime.Now;
@@ -96,7 +103,7 @@ namespace z3nth10n_Launcher
                 if (string.IsNullOrWhiteSpace(txtUsername.Text))
                 {
                     lblNotifications.Text = "You have to specify an username!!";
-                    Program.Shake(this);
+                    API.Shake(this);
 
                     using (Stream s = Properties.Resources.sound101)
                         (new SoundPlayer(s)).Play();
