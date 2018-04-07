@@ -33,6 +33,30 @@ Func<T, bool> action)
                     break;
         }
 
+        public static bool Between(this int val, int min, int max, bool exclusive = false)
+        {
+            if (!exclusive)
+                return val >= min && val <= max;
+            else
+                return val > min && val < max;
+        }
+
+        public static bool Between(this int val, long min, long max, bool exclusive = false)
+        {
+            if (!exclusive)
+                return val >= min && val <= max;
+            else
+                return val > min && val < max;
+        }
+
+        public static bool Between(this long val, long min, long max, bool exclusive = false)
+        {
+            if (!exclusive)
+                return val >= min && val <= max;
+            else
+                return val > min && val < max;
+        }
+
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             object v = null;

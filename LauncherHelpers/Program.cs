@@ -159,7 +159,7 @@ namespace LauncherHelpers
                                     Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
                                     Console.WriteLine();
                                     int dkb = 1; //Estimated balanced weight
-                                    weights = weights.Where(x => x.Value >= (file.Length - dkb * 1024) && x.Value <= (file.Length + dkb * 1024) || x.Value == file.Length).ToDictionary(x => x.Key, x => x.Value);
+                                    weights = weights.Where(x => x.Value.Between(file.Length - dkb * 1024, file.Length + dkb * 1024)).ToDictionary(x => x.Key, x => x.Value);
 
                                     if (weights.Count == 1)
                                     { //Aqui devolvemos la key del elemento 0
