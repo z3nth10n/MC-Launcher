@@ -355,7 +355,7 @@ namespace LauncherHelpers
                         //Generate libraries
 
                         //First we have to download the desired json...
-                        string jsonPath = API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Key + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+                        string jsonPath = API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
                         JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
                         if (!API.IsValidJAR(Path.Combine(API.AssemblyFolderPATH, selVersion.Key)))
@@ -367,6 +367,52 @@ namespace LauncherHelpers
                         //Then, with the JSON we will start to download libraries...
                         //Libraries are divided into artifacts and classifiers...
 
+                        //First we have to identify if we are on bin or in versions folder, to get the root
+                        string libpath = "";
+
+                        if (API.AssemblyFolderPATH.Contains("bin"))
+                            libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(), "libraries");
+                        else if (API.AssemblyFolderPATH.Contains("versions"))
+                            libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+
+                        Console.WriteLine("LibPath: {0}", libpath);
+
+                        if (!string.IsNullOrEmpty(libpath))
+                        {
+                            foreach (var lib in jObject["libraries"])
+                            {
+                                JToken dl = lib["downloads"],
+                                       clssf = dl["classifiers"],
+                                       artf = dl["artifact"];
+
+                                if (clssf != null)
+                                {
+                                    foreach (var child in clssf.Children<JObject>())
+                                    {
+                                        foreach (JProperty prop in child.Properties())
+                                            //if (prop.Name.Contains(API.GetSO().ToString()))
+                                            Console.WriteLine(prop.Name);
+                                    }
+                                    /*switch (API.GetSO())
+                                    {
+                                        case OS.Linux:
+                                            break;
+
+                                        case OS.Windows:
+                                            break;
+
+                                        case OS.OSx:
+                                            break;
+                                    }*/
+                                }
+                            }
+                        }
+                        else
+                        {
+                            API.WriteLineStop("Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)");
+                            App();
+                            return;
+                        }
                         break;
 
                     case 4:

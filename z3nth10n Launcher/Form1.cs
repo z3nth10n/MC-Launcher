@@ -14,7 +14,7 @@ namespace z3nth10n_Launcher
         {
             get
             {
-                return Path.Combine(API.AssemblyPATH, "minecraft.jar");
+                return Path.Combine(API.AssemblyFolderPATH, "minecraft.jar");
             }
         }
 
@@ -73,7 +73,7 @@ namespace z3nth10n_Launcher
         private static bool CheckValidJar()
         {
             if (!File.Exists(minecraftJAR)) return false;
-            else if (!API.AssemblyPATH.Contains("bin") || !API.AssemblyPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
+            else if (!API.AssemblyFolderPATH.Contains("bin") || !API.AssemblyFolderPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
 
             return API.IsValidJAR(minecraftJAR);
         }

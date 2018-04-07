@@ -208,7 +208,7 @@ Func<T, bool> action)
 
         public static bool PreviousChk(string path)
         {
-            bool isf = Directory.Exists(path) && File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+            bool isf = Directory.Exists(path) && IsDirectory(path);
             string fold = isf ? path : Path.GetDirectoryName(path);
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
@@ -327,7 +327,7 @@ Func<T, bool> action)
         {
             if (PreviousChk(path) || overwrite)
             {
-                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.Substring(0, 100));
+                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
                 using (WebClient wc = new WebClient())
                     File.WriteAllBytes(path, wc.DownloadData(url));
             }
@@ -357,6 +357,24 @@ Func<T, bool> action)
         {
             Console.Write(val, objs);
             Console.Read();
+        }
+
+        public static string GetUpperFolders(this string cpath, int levels = 1)
+        {
+            if (!IsDirectory(cpath)) cpath = Path.GetDirectoryName(cpath);
+            for (int i = 0; i < levels; ++i)
+                cpath = Path.GetDirectoryName(cpath);
+            return cpath;
+        }
+
+        public static bool IsDirectory(string path)
+        {
+            return File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+        }
+
+        public static string CleverSubstring(this string str, int limit = 50)
+        {
+            return str.Length >= limit ? str.Substring(0, limit) + "..." : str;
         }
     }
 }
