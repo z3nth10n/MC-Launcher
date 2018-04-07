@@ -120,94 +120,101 @@ namespace LauncherHelpers
 
                         //Start parsing...
                         DirectoryInfo dir = new DirectoryInfo(API.AssemblyPATH);
-                        foreach (FileInfo file in dir.GetFiles())
+
+                        //Select valid jars
+                        IEnumerable<FileInfo> files = dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
+
+                        Console.WriteLine("There are {0} valid versions: {1}", files.Count(), string.Join(", ", files.Select(x => x.Name)));
+                        Console.WriteLine();
+
+                        foreach (FileInfo file in files)
                         {
                             //Console.WriteLine("Parsing file: {0}; Ext: {1}", file.Name, file.Extension);
 
-                            if (file.Extension == ".jar" && file.Length > 1024 * 1024)
+                            string woutext = file.Name.Replace(file.Extension, "");
+                            if (rvers.Contains(woutext))
                             {
-                                string woutext = file.Name.Replace(file.Extension, "");
-                                if (rvers.Contains(woutext))
+                                Console.WriteLine("Found recognized version: {0}", woutext);
+                                continue;
+                            }
+
+                            try
+                            {
+                                bool validJAR = false;
+
+                                validJAR = (bool)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
                                 {
-                                    Console.WriteLine("Found recognized version: {0}", woutext);
-                                    continue;
-                                }
+                                    //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                                    //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
+                                    //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
 
-                                try
+                                    if (valid)
+                                        return true;
+
+                                    return false;
+                                });
+
+                                if (validJAR)
                                 {
-                                    bool validJAR = false;
+                                    Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
+                                    Console.WriteLine();
+                                    int dkb = 1; //Estimated balanced weight
+                                    weights = weights.Where(x => x.Value >= (file.Length - dkb * 1024) && x.Value <= (file.Length + dkb * 1024)).ToDictionary(x => x.Key, x => x.Value);
 
-                                    API.ReadJAR(file.FullName, (zipfile, item, valid) =>
+                                    if (weights.Count == 1)
+                                    { //Aqui devolvemos la key del elemento 0
+                                        Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
+                                    }
+                                    else if (weights.Count > 1)
                                     {
-                                        //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                                        //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
-                                        //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
-
-                                        if (valid)
+                                        Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
+                                        weights.ForEach((x) =>
                                         {
-                                            validJAR = true;
-                                            return true;
-                                        }
+                                            Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
+                                        });
 
-                                        return false;
-                                    });
+                                        Console.WriteLine();
+                                        Console.WriteLine("Searching for a maching version...");
+                                        Console.WriteLine();
 
-                                    if (validJAR)
-                                    {
-                                        Console.WriteLine("Similar to {0} from {1}", file.Length, file.Name);
-                                        int dkb = 1; //Estimated balanced weight
-                                        weights = weights.Where(x => x.Value >= (file.Length - dkb * 1024) && x.Value <= (file.Length + dkb * 1024)).ToDictionary(x => x.Key, x => x.Value);
-
-                                        if (weights.Count == 1)
-                                        { //Aqui devolvemos la key del elemento 0
-                                            Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
-                                        }
-                                        else if (weights.Count > 1)
+                                        string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
                                         {
-                                            Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
-                                            weights.ForEach((x) =>
+                                            using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
                                             {
-                                                Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
-                                            });
+                                                // stream with the file
+                                                string contents = s.ReadToEnd();
 
-                                            Console.WriteLine();
-                                            Console.WriteLine("Searching for a maching version...");
-                                            Console.WriteLine();
-
-                                            string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-                                            {
-                                                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                                                foreach (var x in weights)
                                                 {
-                                                    // stream with the file
-                                                    string contents = s.ReadToEnd();
-
-                                                    foreach (var x in weights)
+                                                    if (contents.Contains(x.Key))
                                                     {
-                                                        if (contents.Contains(x.Key))
-                                                        {
-                                                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x.Key);
-                                                            return x.Key;
-                                                        }
+                                                        Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x.Key);
+                                                        Console.WriteLine();
+                                                        return x.Key;
                                                     }
                                                 }
+                                            }
 
-                                                return false;
-                                            });
+                                            return false;
+                                        });
 
-                                            if (!string.IsNullOrEmpty(validKey))
-                                                Console.WriteLine("Found valid version: {0}", validKey);
-                                            else
-                                                Console.WriteLine("No version found in any of the {0} files!!", weights.Count); //Aqui dariamos a elegir al usuario
-                                        }
-
-                                        //Aqui ya seria cuestion de devolver el weights tal cual para hacer lo que se necesite con la identificación, o incluso darle a elegir al usuario si hubiese mas de una opcion
+                                        if (!string.IsNullOrEmpty(validKey))
+                                            Console.WriteLine("Found valid version: {0}", validKey);
+                                        else
+                                            Console.WriteLine("No version found in any of the {0} files!!", weights.Count); //Aqui dariamos a elegir al usuario
                                     }
+
+                                    //Aqui ya seria cuestion de devolver el weights tal cual para hacer lo que se necesite con la identificación, o incluso darle a elegir al usuario si hubiese mas de una opcion
                                 }
-                                catch (Exception ex)
+                                else
                                 {
-                                    Console.WriteLine("Not real JAR file!!");
-                                    Console.WriteLine(ex);
+                                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ( ͡° ͜ʖ ͡°)", file.Name);
                                 }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Not real JAR file!!");
+                                Console.WriteLine(ex);
                             }
                         }
                         break;
