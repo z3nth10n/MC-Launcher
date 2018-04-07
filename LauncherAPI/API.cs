@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Text;
 using System.Windows.Forms;
 
@@ -124,7 +124,7 @@ Func<T, bool> action)
                 if (!Directory.Exists(path))
                     Directory.CreateDirectory(path);
 
-                path = Path.Combine(path, Convert.ToBase64String(arr));
+                path = Path.Combine(path, Convert.ToBase64String(arr)) + ".json";
 
                 return path;
             }
@@ -222,31 +222,15 @@ Func<T, bool> action)
 
             using (WebClient wc = new WebClient())
             {
-                byte[] by = wc.DownloadData(url),
-                       mychecksum = null;
+                byte[] by = wc.DownloadData(url);
                 string[] arr = Directory.GetFiles(LocalPATH);
 
                 fil = Path.Combine(LocalPATH, string.Format("file{0}{1}",
                                             arr.Length,
                                             MimeTypeMap.GetExtension(GetContentType(url))));
 
-                File.WriteAllBytes(fil, by);
-
-                //Remove repeated files, esto no funca
-                using (var md5 = MD5.Create())
-                {
-                    using (var stream = File.OpenRead(fil))
-                        mychecksum = md5.ComputeHash(stream);
-
-                    foreach (string ff in arr)
-                        using (var stream = File.OpenRead(ff))
-                            if (md5.ComputeHash(stream) == mychecksum)
-                            {
-                                File.Delete(fil);
-                                fil = ff;
-                                break;
-                            }
-                }
+                if (arr.Any(x => File.ReadAllBytes(x) != by))
+                    File.WriteAllBytes(fil, by);
             }
 
             if (string.IsNullOrEmpty(fil))

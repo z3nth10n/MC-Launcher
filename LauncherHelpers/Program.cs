@@ -244,7 +244,7 @@ namespace LauncherHelpers
                         if (jArray != null)
                         {
                             retobj = jArray.ToString();
-                            File.WriteAllText(API.Base64PATH + ".json", retobj);
+                            File.WriteAllText(API.Base64PATH, retobj);
                         }
                         break;
 
@@ -252,8 +252,9 @@ namespace LauncherHelpers
                         //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
 
                         string selVersion = "";
-                        if (File.Exists(API.Base64PATH + ".json"))
+                        if (File.Exists(API.Base64PATH))
                         {
+                            Console.WriteLine(File.ReadAllText(API.Base64PATH));
                             JObject jObject = JObject.Parse(File.ReadAllText(API.Base64PATH + ".json"));
                             Console.WriteLine(jObject.Type);
                         }
