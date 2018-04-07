@@ -33,7 +33,7 @@ Func<T, bool> action)
                     break;
         }
 
-        public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction)
+        public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             object v = null;
             using (var zip = new ZipInputStream(File.OpenRead(path)))
@@ -43,7 +43,14 @@ Func<T, bool> action)
                     ZipEntry item;
                     while ((item = zip.GetNextEntry()) != null)
                     {
-                        v = jarAction(zipfile, item, !item.IsDirectory && item.Name == "net/minecraft/client/main/Main.class");
+                        if (func == null)
+                            func = (i) => !i.IsDirectory && i.Name == "net/minecraft/client/main/Main.class";
+
+                        v = jarAction(zipfile, item, func(item));
+
+                        if (v == null)
+                            continue;
+
                         switch (v.GetType().Name.ToLower())
                         {
                             case "boolean":

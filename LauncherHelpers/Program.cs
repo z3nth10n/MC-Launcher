@@ -194,6 +194,26 @@ namespace LauncherHelpers
                                 else
                                 {
                                     Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
+                                    Console.WriteLine();
+
+                                    string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
+                                    {
+                                        if (!item.IsDirectory && item.Name == "version.json")
+                                        {
+                                            using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                                            {
+                                                // stream with the file
+                                                string contents = s.ReadToEnd();
+
+                                                JObject obj = JObject.Parse(contents);
+                                                return obj["jar"].ToString();
+                                            }
+                                        }
+
+                                        return null;
+                                    }, (item) => true);
+
+                                    MsgValidKey(validKey);
                                 }
                             }
                             catch (Exception ex)
@@ -243,10 +263,15 @@ namespace LauncherHelpers
                 return false;
             });
 
+            MsgValidKey(validKey, col);
+        }
+
+        private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
+        {
             if (!string.IsNullOrEmpty(validKey))
                 Console.WriteLine("Found valid version: {0}", validKey);
             else
-                Console.WriteLine("No version found in any of the {0} files!!", col.Count()); //Aqui dariamos a elegir al usuario
+                Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
 
             Console.WriteLine();
         }
