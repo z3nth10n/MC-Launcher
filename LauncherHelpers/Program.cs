@@ -307,16 +307,21 @@ namespace LauncherHelpers
                         string nativesDir = Path.Combine(API.AssemblyPATH, "natives");
                         API.PreviousChk(nativesDir);
 
+                        Console.WriteLine();
                         //Generate natives
                         switch (API.GetSO())
                         {
                             case OS.Windows:
-                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
                                 API.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
                                 API.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
                                 API.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
 
                                 //JInput
+                                API.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
 
                                 //WinTab case
 
@@ -325,15 +330,27 @@ namespace LauncherHelpers
                                 else
                                     API.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
 
-                                //SAPIWrapper only if version is 1.12.2 or newer...
+                                //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
+                                API.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
+                                API.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
                                 break;
 
                             case OS.Linux:
+                                //WIP
                                 break;
 
                             case OS.OSx:
+                                //WIP
                                 break;
                         }
+
+                        //Download common jars...
+
+                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
+                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
+                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
+
+                        Console.WriteLine();
 
                         //Generate libraries
 

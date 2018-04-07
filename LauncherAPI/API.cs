@@ -315,11 +315,16 @@ Func<T, bool> action)
         {
             if (PreviousChk(path) || overwrite)
             {
+                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.Substring(0, 100));
                 using (WebClient wc = new WebClient())
                     File.WriteAllBytes(path, wc.DownloadData(url));
             }
             else
-                Console.WriteLine("File already exists!");
+            {
+                Console.WriteLine();
+                Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
+                Console.WriteLine();
+            }
         }
 
         public static void WriteLineStop(string val = "")
