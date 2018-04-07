@@ -37,7 +37,7 @@ namespace LauncherHelpers
             int opt = 0;
             if (int.TryParse(c, out opt))
             {
-                string fversion = Path.Combine(API.AssemblyPATH, "fversion.json");
+                string fversion = Path.Combine(API.AssemblyFolderPATH, "fversion.json");
 
                 //Prepare objects
                 JObject jobj = JObject.Parse(File.ReadAllText(fversion));
@@ -53,7 +53,7 @@ namespace LauncherHelpers
                         Console.Clear();
 
                         //Define folder of download
-                        string fold = Path.Combine(API.AssemblyPATH, "Versions");
+                        string fold = Path.Combine(API.AssemblyFolderPATH, "Versions");
 
                         if (!Directory.Exists(fold))
                             Directory.CreateDirectory(fold);
@@ -127,7 +127,7 @@ namespace LauncherHelpers
                         Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
 
                         //Start parsing...
-                        DirectoryInfo dir = new DirectoryInfo(API.AssemblyPATH);
+                        DirectoryInfo dir = new DirectoryInfo(API.AssemblyFolderPATH);
 
                         //Select valid jars
                         IEnumerable<FileInfo> files = dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
@@ -252,12 +252,12 @@ namespace LauncherHelpers
                     case 3:
                         //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
 
-                        string selVersion = "";
+                        KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
                         if (File.Exists(API.Base64PATH))
                         {
                             JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(API.Base64PATH));
                             if (jArr.Count == 1)
-                                selVersion = jArr[0]["version"].ToString();
+                                selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
                             else
                             {
                                 Console.WriteLine("There are several files in this folder, please select one of them:");
@@ -277,7 +277,7 @@ namespace LauncherHelpers
 
                                 int num = 0;
                                 if (int.TryParse(opt1, out num))
-                                    selVersion = filver.ElementAt(num - 1).Value;
+                                    selVersion = filver.ElementAt(num - 1);
                                 else
                                 {
                                     API.WriteLineStop("Please specify a numeric value.");
@@ -293,7 +293,7 @@ namespace LauncherHelpers
                             string version = Console.ReadLine();
 
                             if (rvers.Contains(version))
-                                selVersion = version;
+                                selVersion = new KeyValuePair<string, string>(version, version); //WIP ... Esto no deberia ser asi
                             else
                             {
                                 API.WriteLineStop("Unrecognized versions, please restart...");
@@ -304,7 +304,7 @@ namespace LauncherHelpers
 
                         //Then, start downloading...
 
-                        string nativesDir = Path.Combine(API.AssemblyPATH, "natives");
+                        string nativesDir = Path.Combine(API.AssemblyFolderPATH, "natives");
                         API.PreviousChk(nativesDir);
 
                         Console.WriteLine();
@@ -346,13 +346,26 @@ namespace LauncherHelpers
 
                         //Download common jars...
 
-                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
-                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
-                        API.DownloadFile(Path.Combine(API.AssemblyPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
+                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
+                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
+                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
 
                         Console.WriteLine();
 
                         //Generate libraries
+
+                        //First we have to download the desired json...
+                        string jsonPath = API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Key + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+                        JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
+
+                        if (!API.IsValidJAR(Path.Combine(API.AssemblyFolderPATH, selVersion.Key)))
+                        {
+                            //If, ie, this is a forge jar, we need to download the original minecraft version
+                            API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                        }
+
+                        //Then, with the JSON we will start to download libraries...
+                        //Libraries are divided into artifacts and classifiers...
 
                         break;
 

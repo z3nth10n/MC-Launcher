@@ -75,23 +75,7 @@ namespace z3nth10n_Launcher
             if (!File.Exists(minecraftJAR)) return false;
             else if (!API.AssemblyPATH.Contains("bin") || !API.AssemblyPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
 
-            bool isValid = false;
-            API.ReadJAR(minecraftJAR, (zipfile, entry, valid) =>
-            {
-                //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
-                //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
-
-                if (valid)
-                {
-                    isValid = valid;
-                    return true;
-                }
-
-                return false;
-            });
-
-            return isValid;
+            return API.IsValidJAR(minecraftJAR);
         }
 
         private DateTime lastTime = DateTime.Now;
