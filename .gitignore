@@ -4,3 +4,4 @@
 *.xml
 !fversion.json
 libraries/
+natives/
