@@ -374,7 +374,7 @@ Func<T, bool> action)
 
         public static string CleverSubstring(this string str, int limit = 50)
         {
-            return str.Length >= limit ? str.Substring(0, limit) + "..." : str;
+            return str.Length >= limit ? str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1) : str;
         }
     }
 }

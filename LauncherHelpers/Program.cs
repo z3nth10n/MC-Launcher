@@ -358,10 +358,13 @@ namespace LauncherHelpers
                         string jsonPath = API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
                         JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
+                        Console.WriteLine();
+
                         if (!API.IsValidJAR(Path.Combine(API.AssemblyFolderPATH, selVersion.Key)))
                         {
                             //If, ie, this is a forge jar, we need to download the original minecraft version
                             API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                            Console.WriteLine();
                         }
 
                         //Then, with the JSON we will start to download libraries...
@@ -376,6 +379,7 @@ namespace LauncherHelpers
                             libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
 
                         Console.WriteLine("LibPath: {0}", libpath);
+                        Console.WriteLine();
 
                         if (!string.IsNullOrEmpty(libpath))
                         {
@@ -387,25 +391,48 @@ namespace LauncherHelpers
 
                                 if (clssf != null)
                                 {
-                                    foreach (var child in clssf.Children<JObject>())
+                                    foreach (var child in clssf.Children())
                                     {
-                                        foreach (JProperty prop in child.Properties())
-                                            //if (prop.Name.Contains(API.GetSO().ToString()))
-                                            Console.WriteLine(prop.Name);
+                                        string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
+                                               soid = API.GetSO().ToString().ToLower();
+
+                                        if (name.Contains(soid))
+                                        { //With this, we ensure that we select "natives-windows" (in my case)
+                                            var nats = child.OfType<JObject>();
+                                            foreach (var tok in nats)
+                                            {
+                                                //Here we have every object...
+                                                try
+                                                {
+                                                    API.DownloadFile(Path.Combine(libpath, tok["path"].ToString().Replace('/', '\\')), tok["url"].ToString());
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    Console.WriteLine();
+                                                    Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
+                                                    Console.WriteLine(ex);
+                                                    Console.WriteLine();
+                                                }
+                                            }
+                                        }
                                     }
-                                    /*switch (API.GetSO())
-                                    {
-                                        case OS.Linux:
-                                            break;
+                                }
 
-                                        case OS.Windows:
-                                            break;
-
-                                        case OS.OSx:
-                                            break;
-                                    }*/
+                                //Download artifact...
+                                try
+                                {
+                                    API.DownloadFile(Path.Combine(libpath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine("Couldn't download artifact!! (DL-Path: {0})", dl.Path);
+                                    Console.WriteLine(ex);
+                                    Console.WriteLine();
                                 }
                             }
+
+                            Console.WriteLine();
                         }
                         else
                         {
