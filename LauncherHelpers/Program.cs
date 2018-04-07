@@ -21,7 +21,8 @@ namespace LauncherHelpers
         {
             Console.WriteLine("1.- Generate weights from versions");
             Console.WriteLine("2.- Try to identify a version");
-            Console.WriteLine("3.- Exit");
+            Console.WriteLine("3.- Download JSONs, libraries and natives");
+            Console.WriteLine("4.- Exit");
             Console.WriteLine();
             Console.Write("Select what do you want to do: ");
             string c = Console.ReadLine();
@@ -159,7 +160,7 @@ namespace LauncherHelpers
                                     Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
                                     Console.WriteLine();
                                     int dkb = 1; //Estimated balanced weight
-                                    weights = weights.Where(x => x.Value.Between(file.Length - dkb * 1024, file.Length + dkb * 1024)).ToDictionary(x => x.Key, x => x.Value);
+                                    weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
 
                                     if (weights.Count == 1)
                                     { //Aqui devolvemos la key del elemento 0
@@ -225,6 +226,9 @@ namespace LauncherHelpers
                         break;
 
                     case 3:
+                        break;
+
+                    case 4:
                         Environment.Exit(0);
                         break;
 

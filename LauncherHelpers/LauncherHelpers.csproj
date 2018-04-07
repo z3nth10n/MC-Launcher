@@ -50,6 +50,11 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -60,6 +65,45 @@
       <Project>{48542AF4-E87B-4054-87F6-BF1B340884AF}</Project>
       <Name>LauncherAPI</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lwjgl64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenAL32.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenAL64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SAPIWrapper_x64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SAPIWrapper_x86.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jinput-dx8.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jinput-dx8_64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jinput-raw.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jinput-raw_64.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\jinput-wintab.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\lwjgl.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

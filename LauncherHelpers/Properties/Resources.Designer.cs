@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace z3nth10n_Launcher.Properties {
+namespace LauncherHelpers.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace z3nth10n_Launcher.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("z3nth10n_Launcher.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("LauncherHelpers.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -57,36 +57,6 @@ namespace z3nth10n_Launcher.Properties {
             }
             set {
                 resourceCulture = value;
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap dirt {
-            get {
-                object obj = ResourceManager.GetObject("dirt", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        public static System.Drawing.Bitmap favicon {
-            get {
-                object obj = ResourceManager.GetObject("favicon", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] fversion {
-            get {
-                object obj = ResourceManager.GetObject("fversion", resourceCulture);
-                return ((byte[])(obj));
             }
         }
         
@@ -163,66 +133,6 @@ namespace z3nth10n_Launcher.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] MBold {
-            get {
-                object obj = ResourceManager.GetObject("MBold", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] MBoldItalic {
-            get {
-                object obj = ResourceManager.GetObject("MBoldItalic", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] Minecraft {
-            get {
-                object obj = ResourceManager.GetObject("Minecraft", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] Minecraft1 {
-            get {
-                object obj = ResourceManager.GetObject("Minecraft1", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] MItalic {
-            get {
-                object obj = ResourceManager.GetObject("MItalic", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
-        public static byte[] MRegular {
-            get {
-                object obj = ResourceManager.GetObject("MRegular", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Byte[].
-        /// </summary>
         public static byte[] OpenAL32 {
             get {
                 object obj = ResourceManager.GetObject("OpenAL32", resourceCulture);
@@ -257,15 +167,6 @@ namespace z3nth10n_Launcher.Properties {
             get {
                 object obj = ResourceManager.GetObject("SAPIWrapper_x86", resourceCulture);
                 return ((byte[])(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
-        /// </summary>
-        public static System.IO.UnmanagedMemoryStream sound101 {
-            get {
-                return ResourceManager.GetStream("sound101", resourceCulture);
             }
         }
     }

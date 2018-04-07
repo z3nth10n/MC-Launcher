@@ -123,6 +123,17 @@
   <ItemGroup>
     <Content Include="Resources\dirt.png" />
     <Content Include="Resources\favicon.png" />
+    <None Include="Resources\jinput-wintab.dll" />
+    <None Include="Resources\jinput-raw_64.dll" />
+    <None Include="Resources\jinput-raw.dll" />
+    <None Include="Resources\jinput-dx8_64.dll" />
+    <None Include="Resources\jinput-dx8.dll" />
+    <None Include="Resources\SAPIWrapper_x86.dll" />
+    <None Include="Resources\SAPIWrapper_x64.dll" />
+    <None Include="Resources\OpenAL64.dll" />
+    <None Include="Resources\OpenAL32.dll" />
+    <None Include="Resources\lwjgl64.dll" />
+    <None Include="Resources\lwjgl.dll" />
     <None Include="Resources\sound101.wav" />
   </ItemGroup>
   <ItemGroup>
