@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using MimeTypes;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -75,7 +76,12 @@ Func<T, bool> action)
 
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
-            object v = null;
+            return ReadJAR<object>(path, jarAction, func);
+        }
+
+        public static T ReadJAR<T>(string path, Func<ZipFile, ZipEntry, bool, T> jarAction, Func<ZipEntry, bool> func = null)
+        {
+            T v = default(T);
             using (var zip = new ZipInputStream(File.OpenRead(path)))
             {
                 using (ZipFile zipfile = new ZipFile(path))
@@ -116,7 +122,7 @@ Func<T, bool> action)
 
         public static bool IsValidJAR(string file)
         {
-            return (bool)ReadJAR(file, (zipfile, entry, valid) =>
+            return ReadJAR(file, (zipfile, entry, valid) =>
             {
                 //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                 //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
@@ -375,6 +381,26 @@ Func<T, bool> action)
         public static string CleverSubstring(this string str, int limit = 50)
         {
             return str.Length >= limit ? str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1) : str;
+        }
+
+        public static JObject GetForgeVersion(string path)
+        {
+            return ReadJAR(path, (zipfile, item, valid) =>
+            {
+                if (!item.IsDirectory && item.Name == "version.json")
+                {
+                    using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                    {
+                        // stream with the file
+                        string contents = s.ReadToEnd();
+
+                        JObject obj = JObject.Parse(contents);
+                        return obj;
+                    }
+                }
+
+                return null;
+            }, (item) => true);
         }
     }
 }

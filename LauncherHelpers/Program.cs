@@ -155,7 +155,7 @@ namespace LauncherHelpers
                             {
                                 bool validJAR = false;
 
-                                validJAR = (bool)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
+                                validJAR = API.ReadJAR(file.FullName, (zipfile, item, valid) =>
                                 {
                                     //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
                                     //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
@@ -213,22 +213,7 @@ namespace LauncherHelpers
                                     Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
                                     Console.WriteLine();
 
-                                    string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-                                    {
-                                        if (!item.IsDirectory && item.Name == "version.json")
-                                        {
-                                            using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                                            {
-                                                // stream with the file
-                                                string contents = s.ReadToEnd();
-
-                                                JObject obj = JObject.Parse(contents);
-                                                return obj["jar"].ToString();
-                                            }
-                                        }
-
-                                        return null;
-                                    }, (item) => true);
+                                    string validKey = API.GetForgeVersion(file.FullName)["jar"].ToString();
 
                                     MsgValidKey(validKey);
 
@@ -360,10 +345,17 @@ namespace LauncherHelpers
 
                         Console.WriteLine();
 
-                        if (!API.IsValidJAR(Path.Combine(API.AssemblyFolderPATH, selVersion.Key)))
+                        string ff = Path.Combine(API.AssemblyFolderPATH, selVersion.Key);
+                        if (!API.IsValidJAR(ff))
                         {
                             //If, ie, this is a forge jar, we need to download the original minecraft version
                             API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+
+                            //Check if this a forge version
+                            var forgeObj = API.GetForgeVersion(ff);
+
+                            //Aqui tenemos que descargar las librerias del forge
+
                             Console.WriteLine();
                         }
 
