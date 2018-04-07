@@ -177,31 +177,7 @@ namespace LauncherHelpers
                                         Console.WriteLine("Searching for a maching version...");
                                         Console.WriteLine();
 
-                                        string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-                                        {
-                                            using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                                            {
-                                                // stream with the file
-                                                string contents = s.ReadToEnd();
-
-                                                foreach (KeyValuePair<string, int> x in weights)
-                                                    if (item.Name.Contains(".class") && contents.Contains(x.Key))
-                                                    {
-                                                        Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x.Key);
-                                                        Console.WriteLine();
-                                                        return x.Key;
-                                                    }
-                                            }
-
-                                            return false;
-                                        });
-
-                                        if (!string.IsNullOrEmpty(validKey))
-                                            Console.WriteLine("Found valid version: {0}", validKey);
-                                        else
-                                            Console.WriteLine("No version found in any of the {0} files!!", weights.Count); //Aqui dariamos a elegir al usuario
-
-                                        Console.WriteLine();
+                                        DeeperSearch(file, weights.Keys.AsEnumerable());
                                     }
                                     else
                                     {
@@ -210,38 +186,14 @@ namespace LauncherHelpers
                                         //Aqui lo que podemos es leer el JAR entero y ver si localizamos una string en concreto
                                         //Aunque es raro que el minecraft-.jar esté aqui
 
-                                        string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-                                        {
-                                            using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                                            {
-                                                // stream with the file
-                                                string contents = s.ReadToEnd();
-
-                                                foreach (string x in rvers)
-                                                    if (item.Name.Contains(".class") && contents.Contains(x))
-                                                    {
-                                                        Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
-                                                        Console.WriteLine();
-                                                        return x;
-                                                    }
-                                            }
-
-                                            return false;
-                                        });
-
-                                        if (!string.IsNullOrEmpty(validKey))
-                                            Console.WriteLine("Found valid version: {0}", validKey);
-                                        else
-                                            Console.WriteLine("No version found in any of the {0} files!!", weights.Count); //Aqui dariamos a elegir al usuario
-
-                                        Console.WriteLine();
+                                        DeeperSearch(file, rvers);
                                     }
 
                                     //Aqui ya seria cuestion de devolver el weights tal cual para hacer lo que se necesite con la identificación, o incluso darle a elegir al usuario si hubiese mas de una opcion
                                 }
                                 else
                                 {
-                                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ( ͡° ͜ʖ ͡°)", file.Name);
+                                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
                                 }
                             }
                             catch (Exception ex)
@@ -268,6 +220,35 @@ namespace LauncherHelpers
                 App();
                 return;
             }
+        }
+
+        private static void DeeperSearch(FileInfo file, IEnumerable<string> col)
+        {
+            string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
+            {
+                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                {
+                    // stream with the file
+                    string contents = s.ReadToEnd();
+
+                    foreach (string x in col)
+                        if (item.Name.Contains(".class") && contents.Contains(x))
+                        {
+                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
+                            Console.WriteLine();
+                            return x;
+                        }
+                }
+
+                return false;
+            });
+
+            if (!string.IsNullOrEmpty(validKey))
+                Console.WriteLine("Found valid version: {0}", validKey);
+            else
+                Console.WriteLine("No version found in any of the {0} files!!", col.Count()); //Aqui dariamos a elegir al usuario
+
+            Console.WriteLine();
         }
     }
 }
