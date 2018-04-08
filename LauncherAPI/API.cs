@@ -1,5 +1,6 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
 using MimeTypes;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -100,18 +101,22 @@ Func<T, bool> action)
                         switch (v.GetType().Name.ToLower())
                         {
                             case "boolean":
-                                if ((bool)v)
-                                    return true;
+                                if ((bool)(object)v)
+                                    return (T)(object)true;
                                 break;
 
                             case "string":
-                                if (!string.IsNullOrEmpty((string)v))
+                                if (!string.IsNullOrEmpty((string)(object)v))
                                     return v;
-                                break;
+                                else
+                                {
+                                    Console.WriteLine("String null reading jar!");
+                                    return default(T);
+                                }
 
                             default:
-                                Console.WriteLine("Unrecognized type: {0}", v.GetType().Name.ToLower());
-                                break;
+                                Console.WriteLine("Unrecognized type: {0} (returning... nervermind)", v.GetType().Name.ToLower());
+                                return v; //Break before it continues and returns null value
                         }
                     }
                 }
@@ -388,16 +393,13 @@ Func<T, bool> action)
             return ReadJAR(path, (zipfile, item, valid) =>
             {
                 if (!item.IsDirectory && item.Name == "version.json")
-                {
                     using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
                     {
-                        // stream with the file
                         string contents = s.ReadToEnd();
+                        Console.WriteLine(contents);
 
-                        JObject obj = JObject.Parse(contents);
-                        return obj;
+                        return (JObject)JsonConvert.DeserializeObject(contents);
                     }
-                }
 
                 return null;
             }, (item) => true);

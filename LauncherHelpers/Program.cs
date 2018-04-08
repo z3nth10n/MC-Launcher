@@ -354,7 +354,20 @@ namespace LauncherHelpers
                             //Check if this a forge version
                             var forgeObj = API.GetForgeVersion(ff);
 
+                            //Console.WriteLine(forgeObj.ToString());
+
                             //Aqui tenemos que descargar las librerias del forge
+
+                            foreach (var lib in forgeObj["libraries"].OfType<JObject>())
+                            {
+                                JToken url = lib["url"];
+                                //Aqui hay que comprobar de varios sitios:
+
+                                //http://central.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11/1.0.2/
+                                //http://files.minecraftforge.net/maven/
+                                //y...
+                                //http://store.ttyh.ru/ o ... github que se esta subiendo aun
+                            }
 
                             Console.WriteLine();
                         }
