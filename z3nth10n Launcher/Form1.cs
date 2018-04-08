@@ -27,7 +27,7 @@ namespace z3nth10n_Launcher
         {
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            bool _off = !API.OfflineMode || API.IsLinux;
+            bool _off = !API.OfflineMode || API.GetSO() == OS.Linux;
             if (_off)
                 try
                 {

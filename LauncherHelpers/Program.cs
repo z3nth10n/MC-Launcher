@@ -345,36 +345,6 @@ namespace LauncherHelpers
 
                         Console.WriteLine();
 
-                        string ff = Path.Combine(API.AssemblyFolderPATH, selVersion.Key);
-                        if (!API.IsValidJAR(ff))
-                        {
-                            //If, ie, this is a forge jar, we need to download the original minecraft version
-                            API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
-
-                            //Check if this a forge version
-                            var forgeObj = API.GetForgeVersion(ff);
-
-                            //Console.WriteLine(forgeObj.ToString());
-
-                            //Aqui tenemos que descargar las librerias del forge
-
-                            foreach (var lib in forgeObj["libraries"].OfType<JObject>())
-                            {
-                                JToken url = lib["url"];
-                                //Aqui hay que comprobar de varios sitios:
-
-                                //http://central.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11/1.0.2/
-                                //http://files.minecraftforge.net/maven/
-                                //y...
-                                //http://store.ttyh.ru/ o ... github que se esta subiendo aun
-                            }
-
-                            Console.WriteLine();
-                        }
-
-                        //Then, with the JSON we will start to download libraries...
-                        //Libraries are divided into artifacts and classifiers...
-
                         //First we have to identify if we are on bin or in versions folder, to get the root
                         string libpath = "";
 
@@ -382,6 +352,42 @@ namespace LauncherHelpers
                             libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(), "libraries");
                         else if (API.AssemblyFolderPATH.Contains("versions"))
                             libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+
+                        string ff = Path.Combine(API.AssemblyFolderPATH, selVersion.Key);
+                        if (!API.IsValidJAR(ff))
+                        {
+                            //If, ie, this is a forge jar, we need to download the original minecraft version
+                            API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+
+                            //Check if this a forge version
+                            JObject forgeObj = API.GetForgeVersion(ff);
+
+                            //Aqui tenemos que descargar las librerias del forge
+
+                            foreach (var lib in forgeObj["libraries"].OfType<JObject>())
+                            {
+                                string name = lib["name"].ToString();
+                                //Aqui hay que comprobar de varios sitios:
+
+                                //http://central.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11/1.0.2/
+                                //http://files.minecraftforge.net/maven/
+                                //y...
+                                //http://store.ttyh.ru/ o ... github: https://github.com/ZZona-Dummies/jinput/raw/master/libraries/commons-codec/commons-codec/1.10/commons-codec-1.10.jar
+
+                                string urlRepo = API.GetUrlFromLibName(name),
+                                       libPath = Path.Combine(libpath, API.GetPathFromLibName(name, true));
+
+                                if (!string.IsNullOrEmpty(urlRepo))
+                                    API.DownloadFile(libPath, urlRepo);
+                                else
+                                    Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
+                            }
+
+                            Console.WriteLine();
+                        }
+
+                        //Then, with the JSON we will start to download libraries...
+                        //Libraries are divided into artifacts and classifiers...
 
                         Console.WriteLine("LibPath: {0}", libpath);
                         Console.WriteLine();
@@ -409,7 +415,7 @@ namespace LauncherHelpers
                                                 //Here we have every object...
                                                 try
                                                 {
-                                                    API.DownloadFile(Path.Combine(libpath, tok["path"].ToString().Replace('/', '\\')), tok["url"].ToString());
+                                                    API.DownloadFile(Path.Combine(libpath, API.CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
                                                 }
                                                 catch (Exception ex)
                                                 {

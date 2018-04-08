@@ -174,15 +174,6 @@ Func<T, bool> action)
             }
         }
 
-        public static bool IsLinux
-        {
-            get
-            {
-                int p = (int)Environment.OSVersion.Platform;
-                return (p == 4) || (p == 6) || (p == 128);
-            }
-        }
-
         public static bool OfflineMode
         {
             get
@@ -396,13 +387,64 @@ Func<T, bool> action)
                     using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
                     {
                         string contents = s.ReadToEnd();
-                        Console.WriteLine(contents);
+                        //Console.WriteLine(contents);
 
                         return (JObject)JsonConvert.DeserializeObject(contents);
                     }
 
                 return null;
             }, (item) => true);
+        }
+
+        public static string GetUrlFromLibName(string name)
+        {
+            string namePath = GetPathFromLibName(name),
+                   mavenUrl = string.Format("http://central.maven.org/maven2/{0}", namePath),
+                   githubUrl = string.Format("https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/libraries/{0}", namePath);
+
+            if (RemoteFileExists(mavenUrl))
+                return mavenUrl;
+            else if (RemoteFileExists(githubUrl))
+                return githubUrl;
+
+            return "";
+        }
+
+        public static string GetPathFromLibName(string name, bool clever = false)
+        {
+            string relurl = name.Replace(name.Substring(0, name.IndexOf(':')), name.Substring(0, name.IndexOf(':')).Replace('.', '/')),
+                   file = name.Substring(name.IndexOf(':') + 1).Replace(':', '-') + ".jar";
+
+            relurl = relurl.Replace(':', '/');
+
+            string ret = string.Format("{0}/{1}", relurl, file);
+            return clever ? CleverBackslashes(ret) : ret;
+        }
+
+        public static bool RemoteFileExists(string url)
+        {
+            try
+            {
+                //Creating the HttpWebRequest
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                //Setting the Request method HEAD, you can also use GET too.
+                request.Method = "HEAD";
+                //Getting the Web Response.
+                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
+                //Returns TRUE if the Status code == 200
+                response.Close();
+                return (response.StatusCode == HttpStatusCode.OK);
+            }
+            catch
+            {
+                //Any exception will returns false.
+                return false;
+            }
+        }
+
+        public static string CleverBackslashes(string path)
+        {
+            return GetSO() != OS.Windows ? path : path.Replace('/', '\\');
         }
     }
 }
