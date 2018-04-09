@@ -378,7 +378,7 @@ Func<T, bool> action)
 
         public static string CleverSubstring(this string str, int limit = 50)
         {
-            return str.Length >= limit ? (str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1)) : str;
+            return (str.Length >= limit ? (str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - (limit / 2 - 1))) : str);
         }
 
         public static JObject GetForgeVersion(string path)
@@ -432,10 +432,11 @@ Func<T, bool> action)
                 //Setting the Request method HEAD, you can also use GET too.
                 request.Method = "HEAD";
                 //Getting the Web Response.
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-                //Returns TRUE if the Status code == 200
-                response.Close();
-                return (response.StatusCode == HttpStatusCode.OK);
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    //Returns TRUE if the Status code == 200
+                    return (response.StatusCode == HttpStatusCode.OK);
+                }
             }
             catch
             {
@@ -471,16 +472,41 @@ Func<T, bool> action)
             string libFolder = GetLibPath(),
                    ret = "";
 
-            foreach (string file in Directory.GetFiles(libFolder))
+            foreach (string file in DirSearch(libFolder))
                 ret += file + ";";
 
             if (!string.IsNullOrEmpty(ret))
-                return ret.Substring(0, ret.Length - 2);
+            {
+                string rr = ret.Substring(0, ret.Length - 1);
+                Console.WriteLine(rr);
+                return rr;
+            }
             else
             {
                 Console.WriteLine("Null lib folder!");
                 return "";
             }
+        }
+
+        public static List<string> DirSearch(string sDir)
+        {
+            List<string> files = new List<string>();
+
+            try
+            {
+                foreach (string d in Directory.GetDirectories(sDir))
+                {
+                    foreach (string f in Directory.GetFiles(d))
+                        files.Add(f);
+                    files.AddRange(DirSearch(d));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return files;
         }
 
         public static string GetVersionFromMinecraftJar(string path)
@@ -518,7 +544,7 @@ Func<T, bool> action)
                     weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
 
                     if (weights.Count == 1)
-                    { //Aqui devolvemos la key del elemento 0
+                    {
                         Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
 
                         deeper = null;
@@ -624,10 +650,7 @@ Func<T, bool> action)
         public static string GenerateWeights(string fverPath = "")
         {
             //Get estimated version from weight from jsons
-            //Esto se ejecutará si por ejemplo, el minecraft.jar no se encuentra, pero hay un jar de >1MB, con esto podremos estimar la version
-            //Para luego sacar las librerias y todo el embrollo ese
-            //Hacer esto cada semana, para que no se quede obsoleto el asunto
-            Console.Clear();
+            //Hacer esto cada semana, para que no se quede obsoleto el asunto, WIP ... esto tengo que implementando con lo que he dicho del latest ... si el latests es igual al local entonces devolvemos el local
 
             //Define folder of download
             string fold = Path.Combine(AssemblyFolderPATH, "Versions");
@@ -700,7 +723,7 @@ Func<T, bool> action)
 
         public static IEnumerable<FileInfo> GetValidJars()
         {
-            DirectoryInfo dir = new DirectoryInfo(API.AssemblyFolderPATH);
+            DirectoryInfo dir = new DirectoryInfo(AssemblyFolderPATH);
 
             //Select valid jars
             return dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);

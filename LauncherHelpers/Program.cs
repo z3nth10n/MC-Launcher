@@ -48,6 +48,7 @@ namespace LauncherHelpers
                 switch (opt)
                 {
                     case 1:
+                        Console.Clear();
                         API.GenerateWeights(fversion);
                         break;
 
