@@ -1,4 +1,5 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -655,8 +656,8 @@ namespace LauncherAPI
 
         public static ProcessStartInfo GenerateLaunchProccess()
         {
-            Console.WriteLine("JAVA_HOME: " + Environment.GetEnvironmentVariable("JAVA_HOME"));
-            ProcessStartInfo startInfo = new ProcessStartInfo("java.exe"); //WIP ... tengo que conseguir obtener el directiorio de instalacion en cualquier caso
+            //Console.WriteLine("JAVA_HOME: " + Environment.GetEnvironmentVariable("JAVA_HOME"));
+            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que conseguir obtener el directiorio de instalacion en cualquier caso
 
             startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
                                             (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
@@ -668,6 +669,45 @@ namespace LauncherAPI
             startInfo.RedirectStandardOutput = true;
 
             return startInfo;
+        }
+
+        public static string GetJavaInstallationPath()
+        {
+            string environmentPath = Environment.GetEnvironmentVariable("JAVA_HOME");
+            if (!string.IsNullOrEmpty(environmentPath))
+            {
+                return environmentPath;
+            }
+
+            const string JAVA_KEY = "SOFTWARE\\JavaSoft\\Java Runtime Environment\\";
+
+            var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+            using (var rk = localKey.OpenSubKey(JAVA_KEY))
+            {
+                if (rk != null)
+                {
+                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                    using (var key = rk.OpenSubKey(currentVersion))
+                    {
+                        return key.GetValue("JavaHome").ToString();
+                    }
+                }
+            }
+
+            localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            using (var rk = localKey.OpenSubKey(JAVA_KEY))
+            {
+                if (rk != null)
+                {
+                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                    using (var key = rk.OpenSubKey(currentVersion))
+                    {
+                        return key.GetValue("JavaHome").ToString();
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }
