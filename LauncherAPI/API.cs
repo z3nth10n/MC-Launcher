@@ -378,7 +378,7 @@ Func<T, bool> action)
 
         public static string CleverSubstring(this string str, int limit = 50)
         {
-            return (str.Length >= limit ? (str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - (limit / 2 - 1))) : str);
+            return str.Length >= limit ? str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1) : str;
         }
 
         public static JObject GetForgeVersion(string path)
@@ -733,48 +733,12 @@ Func<T, bool> action)
         {
             //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
 
-            KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
-            if (File.Exists(Base64PATH))
-            {
-                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(Base64PATH));
+            object selObj = GetSelVersion(rvers);
 
-                if (jArr.Count == 1)
-                    selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
-                else
-                {
-                    Console.WriteLine("There are several files in this folder, please select one of them:");
-                    Console.WriteLine();
+            if (selObj.GetType() == typeof(string))
+                return (string)selObj;
 
-                    int i = 1;
-                    Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
-                    foreach (var entry in filver)
-                    {
-                        Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
-                        ++i;
-                    }
-
-                    Console.WriteLine();
-                    Console.Write("Select one of them: ");
-                    string opt1 = Console.ReadLine();
-
-                    int num = 0;
-                    if (int.TryParse(opt1, out num))
-                        selVersion = filver.ElementAt(num - 1);
-                    else
-                        return "Please specify a numeric value.";
-                }
-            }
-            else
-            {
-                //Introducir version manualmente
-                Console.Write("There isn't any reference, write a recognized version: ");
-                string version = Console.ReadLine();
-
-                if (rvers.Contains(version))
-                    selVersion = new KeyValuePair<string, string>(version, version); //WIP ... Esto no deberia ser asi
-                else
-                    return "Unrecognized versions, please restart...";
-            }
+            KeyValuePair<string, string> selVersion = (KeyValuePair<string, string>)selObj;
 
             //Then, start downloading...
 
@@ -782,48 +746,7 @@ Func<T, bool> action)
             PreviousChk(nativesDir);
 
             Console.WriteLine();
-            //Generate natives
-            switch (GetSO())
-            {
-                case OS.Windows:
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
-
-                    //JInput
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
-
-                    //WinTab case
-
-                    if (Environment.Is64BitOperatingSystem)
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
-                    else
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
-
-                    //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
-                    break;
-
-                case OS.Linux:
-                    //WIP
-                    break;
-
-                case OS.OSx:
-                    //WIP
-                    break;
-            }
-
-            //Download common jars...
-
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
-
+            DownloadNatives(nativesDir);
             Console.WriteLine();
 
             //Generate libraries
@@ -941,6 +864,99 @@ Func<T, bool> action)
             }
 
             Console.WriteLine();
+        }
+
+        private static void DownloadNatives(string nativesDir)
+        {
+            //Generate natives
+            switch (GetSO())
+            {
+                case OS.Windows:
+                    DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
+                    DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
+                    DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
+                    DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
+
+                    //JInput
+                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
+                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
+                    DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
+                    DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
+
+                    //WinTab case
+
+                    if (Environment.Is64BitOperatingSystem)
+                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
+                    else
+                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
+
+                    //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
+                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
+                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
+                    break;
+
+                case OS.Linux:
+                    //WIP
+                    break;
+
+                case OS.OSx:
+                    //WIP
+                    break;
+            }
+
+            //Download common jars...
+
+            DownloadFile(Path.Combine(AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
+            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
+            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
+        }
+
+        private static object GetSelVersion(IEnumerable<string> rvers)
+        {
+            KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
+            if (File.Exists(Base64PATH))
+            {
+                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(Base64PATH));
+
+                if (jArr.Count == 1)
+                    selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
+                else
+                {
+                    Console.WriteLine("There are several files in this folder, please select one of them:");
+                    Console.WriteLine();
+
+                    int i = 1;
+                    Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
+                    foreach (var entry in filver)
+                    {
+                        Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
+                        ++i;
+                    }
+
+                    Console.WriteLine();
+                    Console.Write("Select one of them: ");
+                    string opt1 = Console.ReadLine();
+
+                    int num = 0;
+                    if (int.TryParse(opt1, out num))
+                        selVersion = filver.ElementAt(num - 1);
+                    else
+                        return "Please specify a numeric value.";
+                }
+            }
+            else
+            {
+                //Introducir version manualmente
+                Console.Write("There isn't any reference, write a recognized version: ");
+                string version = Console.ReadLine();
+
+                if (rvers.Contains(version))
+                    selVersion = new KeyValuePair<string, string>(version, version); //WIP ... Esto no deberia ser asi
+                else
+                    return "Unrecognized versions, please restart...";
+            }
+
+            return selVersion;
         }
     }
 }
