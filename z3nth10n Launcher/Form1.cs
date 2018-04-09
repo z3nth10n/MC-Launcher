@@ -40,30 +40,35 @@ namespace z3nth10n_Launcher
                     _off = false;
                 }
 
+            Font arial = new Font("Arial", 15);
+
             if (!_off)
             {
-                Font ff = null;
+                //string f = Path.Combine(ApiBasics.LocalPATH, "Minecraft.otf");
 
-                string f = Path.Combine(ApiBasics.LocalPATH, "Minecraft.otf");
-
-                if (ApiBasics.PreviousChk(f))
+                /*if (ApiBasics.PreviousChk(f))
                     File.WriteAllBytes(f, Properties.Resources.MBold);
 
                 PrivateFontCollection pfc = new PrivateFontCollection();
 
-                pfc.AddFontFile(f); //Aun asi no funciona, solo en WIN
+                pfc.AddFontFile(f);*/ //Aun asi no funciona, solo en WIN
 
-                ff = new Font(pfc.Families[0], 30);
+                MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
+
+                Font mBold = MemoryFonts.GetFont(0, 30),
+                     mRegular = null;
+
+                MemoryFonts.AddMemoryFont(Properties.Resources.MRegular);
+
+                mRegular = MemoryFonts.GetFont(0, 15);
 
                 //Assign font
-                pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
-                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
-                lblProgress.Font = ff;
+                pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                lblProgress.Font = ApiBasics.GetSO() == OS.Linux ? arial : mRegular;
             }
             else
-            {
-                lblProgress.Font = new Font("Arial", 30);
-            }
+                lblProgress.Font = arial;
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
 
@@ -72,7 +77,7 @@ namespace z3nth10n_Launcher
                 BeginInvoke((MethodInvoker)delegate
                 {
                     double percentage = bytesIn / totalBytes * 100d;
-                    label2.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", fileName, (int)percentage, (bytesSec / 1024d).ToString("F2"));
+                    lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", fileName, (int)percentage, (bytesSec / 1024d).ToString("F2"));
                     progressBar1.Value = (int)percentage;
                 });
             };
@@ -114,7 +119,9 @@ namespace z3nth10n_Launcher
 
         private void button1_Click_1(object sender, EventArgs e)
         {
+            pnlMain.SendToBack();
             pnlMain.Visible = false;
+            //Controls.Remove(pnlMain);
             ApiLauncher.DownloadLibraries();
         }
     }

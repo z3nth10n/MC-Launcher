@@ -14,8 +14,8 @@ namespace LauncherAPI
 {
     public static class ApiLauncher
     {
-        public static Action<long, long, string, long> dlProgressChanged = null;
-        public static Action dlCompleted = null;
+        public static Action<long, long, string, long> dlProgressChanged { get; set; }
+        public static Action dlCompleted { get; set; }
 
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
