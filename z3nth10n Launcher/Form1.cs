@@ -1,10 +1,11 @@
 ﻿using LauncherAPI;
 using System;
 using System.Drawing;
-using System.Drawing.Text;
 using System.IO;
 using System.Media;
 using System.Windows.Forms;
+
+//using Props = z3nth10n_Launcher.Properties.Settings;
 
 namespace z3nth10n_Launcher
 {
@@ -25,6 +26,9 @@ namespace z3nth10n_Launcher
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            if (!string.IsNullOrEmpty(SM.Username))
+                txtUsername.Text = SM.Username;
+
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
 
@@ -70,7 +74,7 @@ namespace z3nth10n_Launcher
             else
                 lblProgress.Font = arial;
 
-            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
+            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file."; //WIP ... esto siempre aparece
 
             ApiLauncher.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
             {
@@ -106,6 +110,15 @@ namespace z3nth10n_Launcher
 
         private void button1_Click(object sender, EventArgs e)
         {
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Program.Exit();
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
             if ((DateTime.Now - lastTime).TotalMilliseconds > 2000)
             {
                 if (string.IsNullOrWhiteSpace(txtUsername.Text))
@@ -116,23 +129,18 @@ namespace z3nth10n_Launcher
                     using (Stream s = Properties.Resources.sound101)
                         (new SoundPlayer(s)).Play();
                 }
+                else
+                {
+                    SM.Username = txtUsername.Text;
+                    pnlMain.SendToBack();
+                    pnlMain.Visible = false;
+                    //Controls.Remove(pnlMain);
+                    string str = ApiLauncher.DownloadLibraries();
+                    Console.WriteLine(string.IsNullOrEmpty(str) ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
+                }
 
                 lastTime = DateTime.Now;
             }
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Program.Exit();
-        }
-
-        private void button1_Click_1(object sender, EventArgs e)
-        {
-            pnlMain.SendToBack();
-            pnlMain.Visible = false;
-            //Controls.Remove(pnlMain);
-            string str = ApiLauncher.DownloadLibraries();
-            Console.WriteLine(string.IsNullOrEmpty(str) ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
         }
     }
 }
