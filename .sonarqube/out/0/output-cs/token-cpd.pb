@@ -255,7 +255,7 @@ VD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\APIExtens
 ;00- .
 }11 	
 }22 
-}33 ß∂
+}33 £∂
 RD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\APIBasics.cs
 	namespace 	
 LauncherAPI
@@ -2216,13 +2216,13 @@ OSPlatform
 OSPlatform
 ãã5 ?
 .
-ãã? @
-Windows
-ãã@ G
+ãã? @
+OSX
+ãã@ C
 )
-ããG H
+ããC D
 )
-ããH I
+ããD E
 return
 åå 
 OS
@@ -2249,7 +2249,7 @@ OSPlatform
 èè 	
 }
 êê 
-}ëë Éª
+}ëë òª
 TD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\APILauncher.cs
 	namespace 	
 LauncherAPI
@@ -2485,20 +2485,22 @@ TD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\APILaunch
 :..) *
 if//  "
 (//# $
-!//$ %
-string//% +
-.//+ ,
-IsNullOrEmpty//, 9
-(//9 :
-(//: ;
-string//; A
-)//A B
-(//B C
-object//C I
-)//I J
-v//J K
-)//K L
-)//L M
+!//$ %
+(//% &
+(//& '
+string//' -
+)//- .
+(//. /
+object/// 5
+)//5 6
+v//6 7
+)//7 8
+.//8 9
+Equals//9 ?
+(//? @
+null//@ D
+)//D E
+)//E F
 return00$ *
 v00+ ,
 ;00, -
