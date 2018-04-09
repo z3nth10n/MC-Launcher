@@ -86,215 +86,11 @@ namespace LauncherHelpers
                         break;
 
                     case 3:
-                        //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
+                        string errorStr = API.DownloadLibraries(rvers);
 
-                        KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
-                        if (File.Exists(API.Base64PATH))
+                        if (!string.IsNullOrEmpty(errorStr))
                         {
-                            JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(API.Base64PATH));
-
-                            if (jArr.Count == 1)
-                                selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
-                            else
-                            {
-                                Console.WriteLine("There are several files in this folder, please select one of them:");
-                                Console.WriteLine();
-
-                                int i = 1;
-                                Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
-                                foreach (var entry in filver)
-                                {
-                                    Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
-                                    ++i;
-                                }
-
-                                Console.WriteLine();
-                                Console.Write("Select one of them: ");
-                                string opt1 = Console.ReadLine();
-
-                                int num = 0;
-                                if (int.TryParse(opt1, out num))
-                                    selVersion = filver.ElementAt(num - 1);
-                                else
-                                {
-                                    API.WriteLineStop("Please specify a numeric value.");
-                                    App();
-                                    return;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //Introducir version manualmente
-                            Console.Write("There isn't any reference, write a recognized version: ");
-                            string version = Console.ReadLine();
-
-                            if (rvers.Contains(version))
-                                selVersion = new KeyValuePair<string, string>(version, version); //WIP ... Esto no deberia ser asi
-                            else
-                            {
-                                API.WriteLineStop("Unrecognized versions, please restart...");
-                                App();
-                                return;
-                            }
-                        }
-
-                        //Then, start downloading...
-
-                        string nativesDir = Path.Combine(API.AssemblyFolderPATH, "natives");
-                        API.PreviousChk(nativesDir);
-
-                        Console.WriteLine();
-                        //Generate natives
-                        switch (API.GetSO())
-                        {
-                            case OS.Windows:
-                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
-
-                                //JInput
-                                API.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
-
-                                //WinTab case
-
-                                if (Environment.Is64BitOperatingSystem)
-                                    API.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
-                                else
-                                    API.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
-
-                                //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                                API.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
-                                API.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
-                                break;
-
-                            case OS.Linux:
-                                //WIP
-                                break;
-
-                            case OS.OSx:
-                                //WIP
-                                break;
-                        }
-
-                        //Download common jars...
-
-                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
-                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
-                        API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
-
-                        Console.WriteLine();
-
-                        //Generate libraries
-
-                        //First we have to download the desired json...
-                        string jsonPath = API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
-                        JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
-
-                        Console.WriteLine();
-
-                        //First we have to identify if we are on bin or in versions folder, to get the root
-                        string lPath = API.GetLibPath();
-
-                        string ff = Path.Combine(API.AssemblyFolderPATH, selVersion.Key);
-                        if (!API.IsValidJAR(ff))
-                        {
-                            //If, ie, this is a forge jar, we need to download the original minecraft version
-                            API.DownloadFile(Path.Combine(API.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
-
-                            //Check if this a forge version
-                            JObject forgeObj = API.GetForgeVersion(ff);
-
-                            //Aqui tenemos que descargar las librerias del forge
-
-                            foreach (var lib in forgeObj["libraries"].OfType<JObject>())
-                            {
-                                string name = lib["name"].ToString();
-                                //Aqui hay que comprobar de varios sitios:
-
-                                //http://central.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11/1.0.2/
-                                //http://files.minecraftforge.net/maven/
-                                //y...
-                                //http://store.ttyh.ru/ o ... github: https://github.com/ZZona-Dummies/jinput/raw/master/libraries/commons-codec/commons-codec/1.10/commons-codec-1.10.jar
-
-                                string urlRepo = API.GetUrlFromLibName(name),
-                                       libPath = Path.Combine(lPath, API.GetPathFromLibName(name, true));
-
-                                if (!string.IsNullOrEmpty(urlRepo))
-                                    API.DownloadFile(libPath, urlRepo);
-                                else
-                                    Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
-                            }
-
-                            Console.WriteLine();
-                        }
-
-                        //Then, with the JSON we will start to download libraries...
-                        //Libraries are divided into artifacts and classifiers...
-
-                        Console.WriteLine("LibPath: {0}", lPath);
-                        Console.WriteLine();
-
-                        if (!string.IsNullOrEmpty(lPath))
-                        {
-                            foreach (var lib in jObject["libraries"])
-                            {
-                                JToken dl = lib["downloads"],
-                                       clssf = dl["classifiers"],
-                                       artf = dl["artifact"];
-
-                                if (clssf != null)
-                                {
-                                    foreach (var child in clssf.Children())
-                                    {
-                                        string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
-                                               soid = API.GetSO().ToString().ToLower();
-
-                                        if (name.Contains(soid))
-                                        { //With this, we ensure that we select "natives-windows" (in my case)
-                                            var nats = child.OfType<JObject>();
-                                            foreach (var tok in nats)
-                                            {
-                                                //Here we have every object...
-                                                try
-                                                {
-                                                    API.DownloadFile(Path.Combine(lPath, API.CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                    Console.WriteLine();
-                                                    Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
-                                                    Console.WriteLine(ex);
-                                                    Console.WriteLine();
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                //Download artifact...
-                                try
-                                {
-                                    API.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine();
-                                    Console.WriteLine("Couldn't download artifact!! (DL-Path: {0})", dl.Path);
-                                    Console.WriteLine(ex);
-                                    Console.WriteLine();
-                                }
-                            }
-
-                            Console.WriteLine();
-                        }
-                        else
-                        {
-                            API.WriteLineStop("Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)");
+                            API.WriteLineStop(errorStr);
                             App();
                             return;
                         }
@@ -311,11 +107,12 @@ namespace LauncherHelpers
 
                         Console.WriteLine("Execution: {0}", "java or java_path");
                         Console.WriteLine(@"Parameters: -Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties { } --version {4} --username {5}",
-                                            (API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)).ToString("F0"),
-                                            (API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)).ToString("F0"),
+                                            (ulong)(API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
+                                            (ulong)(API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
                                             Path.Combine(API.AssemblyFolderPATH, "natives"),
                                             API.GetAllLibs(),
-                                            API.GetVersionFromMinecraftJar(API.GetValidJars().ElementAt(0).FullName));
+                                            API.GetVersionFromMinecraftJar(API.GetValidJars().ElementAt(0).FullName),
+                                            "username --> txtUsername.Text");
                         break;
 
                     case 5:
