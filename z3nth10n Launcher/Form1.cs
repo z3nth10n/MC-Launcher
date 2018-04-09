@@ -13,7 +13,7 @@ namespace z3nth10n_Launcher
         private static string minecraftJAR
         {
             get
-            {
+            { //minecraft.jar or any version
                 return Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar");
             }
         }
@@ -26,12 +26,14 @@ namespace z3nth10n_Launcher
         private void Form1_Load(object sender, EventArgs e)
         {
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
+            pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
 
             bool _off = !ApiBasics.OfflineMode || ApiBasics.GetSO() == OS.Linux;
             if (_off)
                 try
                 {
-                    pictureBox1.Load("http://localhost/z3nth10n-PHP/logo.php");
+                    pictureBox1.Load(ApiLauncher.GetLogoStr());
+                    pictureBox2.Load(ApiLauncher.GetLogoStr("Updating Minecraft"));
                 }
                 catch
                 {
@@ -53,10 +55,27 @@ namespace z3nth10n_Launcher
 
                 ff = new Font(pfc.Families[0], 30);
 
+                //Assign font
                 pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                lblProgress.Font = ff;
+            }
+            else
+            {
+                lblProgress.Font = new Font("Arial", 30);
             }
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
+
+            ApiLauncher.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
+            {
+                BeginInvoke((MethodInvoker)delegate
+                {
+                    double percentage = bytesIn / totalBytes * 100d;
+                    label2.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", fileName, (int)percentage, (bytesSec / 1024d).ToString("F2"));
+                    progressBar1.Value = (int)percentage;
+                });
+            };
         }
 
         //Funcs
@@ -91,6 +110,12 @@ namespace z3nth10n_Launcher
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Program.Exit();
+        }
+
+        private void button1_Click_1(object sender, EventArgs e)
+        {
+            pnlMain.Visible = false;
+            ApiLauncher.DownloadLibraries();
         }
     }
 }

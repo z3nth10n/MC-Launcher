@@ -15,7 +15,7 @@ namespace z3nth10n_Launcher
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
+            //Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
 
@@ -25,7 +25,7 @@ namespace z3nth10n_Launcher
 
         public static void Exit()
         {
-            timer.Dispose();
+            if (timer != null) timer.Dispose();
         }
     }
 }

@@ -76,10 +76,6 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Controls\ColorProgressBar.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Controls\ColorProgressBarDesigner.cs" />
     <Compile Include="Form1.cs">
       <SubType>Form</SubType>
     </Compile>

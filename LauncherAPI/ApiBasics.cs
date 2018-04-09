@@ -1,5 +1,6 @@
 ﻿using MimeTypes;
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -8,6 +9,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace LauncherAPI
@@ -202,18 +204,54 @@ namespace LauncherAPI
             }
         }
 
-        public static string DownloadFile(string path, string url, bool overwrite = false)
+        public static string DownloadFile(string path, string url, Action<long, long, string, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
         {
             if (PreviousChk(path) || overwrite)
             {
                 Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
-                using (WebClient wc = new WebClient())
-                    File.WriteAllBytes(path, wc.DownloadData(url));
+                Thread th = new Thread(() =>
+                {
+                    using (WebClient wc = new WebClient())
+                    {
+                        if (dlProgressChanged != null) wc.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, Path.GetFileName(path)); });
+                        if (dlCompleted != null) wc.DownloadFileCompleted += new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted); });
+                        wc.DownloadFileAsync(new Uri(url), path);
+                    }
+                });
+                th.Start();
             }
             else
                 Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
 
             return path;
+        }
+
+        private static DateTime lastUpdate;
+        private static long lastBytes = 0;
+
+        private static void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e, Action<long, long, string, long> dlProgressChanged, string file)
+        {
+            if (lastBytes == 0)
+            {
+                lastUpdate = DateTime.Now;
+                lastBytes = e.BytesReceived;
+                return;
+            }
+
+            DateTime now = DateTime.Now;
+            TimeSpan timeSpan = now - lastUpdate;
+            long bytesChange = e.BytesReceived - lastBytes,
+                 bytesPerSecond = bytesChange / timeSpan.Seconds;
+
+            dlProgressChanged(e.BytesReceived, e.TotalBytesToReceive, file, bytesPerSecond);
+
+            lastBytes = e.BytesReceived;
+            lastUpdate = now;
+        }
+
+        private static void Wc_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e, Action dlCompleted)
+        {
+            dlCompleted();
         }
 
         public static void WriteLineStop(string val = "")

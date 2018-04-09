@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.panel2 = new System.Windows.Forms.Panel();
+            this.pnlMain = new System.Windows.Forms.Panel();
             this.button4 = new System.Windows.Forms.Button();
             this.lblNotifications = new System.Windows.Forms.Label();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
@@ -42,24 +42,27 @@
             this.button1 = new System.Windows.Forms.Button();
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.label1 = new System.Windows.Forms.Label();
-            this.progressBar1 = new Controls.ColorProgressBar();
-            this.panel2.SuspendLayout();
+            this.lblProgress = new System.Windows.Forms.Label();
+            this.progressBar1 = new System.Windows.Forms.ProgressBar();
+            this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.pnlMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             this.SuspendLayout();
             // 
-            // panel2
+            // pnlMain
             // 
-            this.panel2.BackColor = System.Drawing.Color.Transparent;
-            this.panel2.Controls.Add(this.button4);
-            this.panel2.Controls.Add(this.lblNotifications);
-            this.panel2.Controls.Add(this.pictureBox1);
-            this.panel2.Controls.Add(this.panel1);
-            this.panel2.Location = new System.Drawing.Point(4, 6);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(16, 16);
-            this.panel2.TabIndex = 7;
+            this.pnlMain.BackColor = System.Drawing.Color.Transparent;
+            this.pnlMain.Controls.Add(this.button4);
+            this.pnlMain.Controls.Add(this.lblNotifications);
+            this.pnlMain.Controls.Add(this.pictureBox1);
+            this.pnlMain.Controls.Add(this.panel1);
+            this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pnlMain.Location = new System.Drawing.Point(0, 0);
+            this.pnlMain.Name = "pnlMain";
+            this.pnlMain.Size = new System.Drawing.Size(854, 481);
+            this.pnlMain.TabIndex = 7;
             // 
             // button4
             // 
@@ -186,6 +189,7 @@
             this.button1.TabIndex = 2;
             this.button1.Text = "Enter Game";
             this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.button1_Click_1);
             // 
             // txtUsername
             // 
@@ -206,25 +210,36 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Username:";
             // 
-            // label1
+            // lblProgress
             // 
-            this.label1.BackColor = System.Drawing.Color.Transparent;
-            this.label1.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.label1.Location = new System.Drawing.Point(4, 141);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(844, 48);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "label1";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.lblProgress.BackColor = System.Drawing.Color.Transparent;
+            this.lblProgress.ForeColor = System.Drawing.SystemColors.ControlDark;
+            this.lblProgress.Location = new System.Drawing.Point(4, 263);
+            this.lblProgress.Name = "lblProgress";
+            this.lblProgress.Size = new System.Drawing.Size(844, 107);
+            this.lblProgress.TabIndex = 8;
+            this.lblProgress.Text = "label1";
+            this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // progressBar1
             // 
             this.progressBar1.BackColor = System.Drawing.Color.Black;
-            this.progressBar1.Location = new System.Drawing.Point(4, 194);
+            this.progressBar1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.progressBar1.Location = new System.Drawing.Point(7, 373);
             this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(844, 23);
+            this.progressBar1.Size = new System.Drawing.Size(841, 10);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressBar1.TabIndex = 9;
             this.progressBar1.Value = 50;
+            // 
+            // pictureBox2
+            // 
+            this.pictureBox2.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox2.Location = new System.Drawing.Point(4, 73);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(844, 91);
+            this.pictureBox2.TabIndex = 10;
+            this.pictureBox2.TabStop = false;
             // 
             // Form1
             // 
@@ -232,9 +247,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::z3nth10n_Launcher.Properties.Resources.dirt;
             this.ClientSize = new System.Drawing.Size(854, 481);
+            this.Controls.Add(this.pictureBox2);
+            this.Controls.Add(this.pnlMain);
             this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.label1);
-            this.Controls.Add(this.panel2);
+            this.Controls.Add(this.lblProgress);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -242,15 +258,16 @@
             this.Text = "Minecraft Launcher (z3nth10n Version - Anjocaid0 Reborn)";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
-            this.panel2.ResumeLayout(false);
+            this.pnlMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.ResumeLayout(false);
 
         }
 
-        private System.Windows.Forms.Panel panel2;
+        private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label lblNotifications;
         private System.Windows.Forms.PictureBox pictureBox1;
@@ -264,8 +281,10 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label label1;
-        private Controls.ColorProgressBar progressBar1;
+        private System.Windows.Forms.Label lblProgress;
+        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.PictureBox pictureBox2;
+        //private Controls.ColorProgressBar progressBar1;
 
         #endregion
         //private System.Windows.Forms.WebBrowser webBrowser1;

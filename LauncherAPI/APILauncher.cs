@@ -14,6 +14,9 @@ namespace LauncherAPI
 {
     public static class ApiLauncher
     {
+        public static Action<long, long, string, long> dlProgressChanged = null;
+        public static Action dlCompleted = null;
+
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             return ReadJAR<object>(path, jarAction, func);
@@ -413,6 +416,14 @@ namespace LauncherAPI
             return dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
         }
 
+        public static string DownloadLibraries()
+        {
+            JObject jobj = JObject.Parse(GenerateWeights());
+            IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
+
+            return DownloadLibraries(rvers);
+        }
+
         public static string DownloadLibraries(IEnumerable<string> rvers)
         {
             //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
@@ -436,7 +447,7 @@ namespace LauncherAPI
             //Generate libraries
 
             //First we have to download the desired json...
-            string jsonPath = ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+            string jsonPath = DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
             JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
             Console.WriteLine();
@@ -466,7 +477,7 @@ namespace LauncherAPI
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -487,7 +498,7 @@ namespace LauncherAPI
                            libPath = Path.Combine(lPath, GetPathFromLibName(name, true));
 
                     if (!string.IsNullOrEmpty(urlRepo))
-                        ApiBasics.DownloadFile(libPath, urlRepo);
+                        DownloadFile(libPath, urlRepo);
                     else
                         Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
                 }
@@ -507,7 +518,7 @@ namespace LauncherAPI
                 //Download artifact...
                 try
                 {
-                    ApiBasics.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
                 }
                 catch (Exception ex)
                 {
@@ -537,7 +548,7 @@ namespace LauncherAPI
                         //Here we have every object...
                         try
                         {
-                            ApiBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                            DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
                         }
                         catch (Exception ex)
                         {
@@ -565,27 +576,27 @@ namespace LauncherAPI
                         "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows"
                     };
 
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows[0]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), string.Format("{0}/x64/lwjgl.dll", preWindows[0]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), string.Format("{0}/x86/OpenAL32.dll", preWindows[0]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), string.Format("{0}/x64/OpenAL.dll", preWindows[0]));
+                    DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows[0]));
+                    DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), string.Format("{0}/x64/lwjgl.dll", preWindows[0]));
+                    DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), string.Format("{0}/x86/OpenAL32.dll", preWindows[0]));
+                    DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), string.Format("{0}/x64/OpenAL.dll", preWindows[0]));
 
                     //JInput
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), string.Format("{0}/x86/jinput-dx8.dll", preWindows[1]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), string.Format("{0}/x86_64/jinput-dx8_64.dll", preWindows[1]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), string.Format("{0}/x86/jinput-raw.dll", preWindows[1]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), string.Format("{0}/x86_64/jinput-raw_64.dll", preWindows[1]));
+                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), string.Format("{0}/x86/jinput-dx8.dll", preWindows[1]));
+                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), string.Format("{0}/x86_64/jinput-dx8_64.dll", preWindows[1]));
+                    DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), string.Format("{0}/x86/jinput-raw.dll", preWindows[1]));
+                    DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), string.Format("{0}/x86_64/jinput-raw_64.dll", preWindows[1]));
 
                     //WinTab case
 
                     if (Environment.Is64BitOperatingSystem)
-                        ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86_64/jinput-wintab.dll", preWindows[1]));
+                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86_64/jinput-wintab.dll", preWindows[1]));
                     else
-                        ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86/jinput-wintab.dll", preWindows[1]));
+                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86/jinput-wintab.dll", preWindows[1]));
 
                     //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), string.Format("{0}/SAPIWrapper_x64.dll", preWindows[2]));
-                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), string.Format("{0}/SAPIWrapper_x86.dll", preWindows[2]));
+                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), string.Format("{0}/SAPIWrapper_x64.dll", preWindows[2]));
+                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), string.Format("{0}/SAPIWrapper_x86.dll", preWindows[2]));
                     break;
 
                 case OS.Linux:
@@ -600,9 +611,9 @@ namespace LauncherAPI
             //Download common jars...
 
             string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
-            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
-            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
-            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
+            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
+            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
         }
 
         private static object GetSelVersion(IEnumerable<string> rvers)
@@ -707,6 +718,17 @@ namespace LauncherAPI
             }
 
             return null;
+        }
+
+        public static string DownloadFile(string path, string url, bool overwrite = false)
+        {
+            return ApiBasics.DownloadFile(path, url, dlProgressChanged, dlCompleted, overwrite);
+        }
+
+        public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)
+        {
+            //WIP ... Obtener enlace de la pagina, segun si es localhosto o no, como ya hice en su momento
+            return string.Format("http://localhost/z3nth10n-PHP/logo.php?text={0}&font={1}&size={2}", text, font, size);
         }
     }
 }
