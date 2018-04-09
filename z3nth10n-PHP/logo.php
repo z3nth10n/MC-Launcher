@@ -15,7 +15,7 @@ imagefill($im, 0, 0, $color);
 // El texto a dibujar
 $texto = 'Minecraft Launcher';
 // Reemplace la ruta por la de su propia fuente
-$fuente = 'MBold.otf';
+$fuente = 'fonts/MBold.otf';
 
 // Añadir algo de sombra al texto
 //imagettftext($im, 20, 0, 11, 21, $gris, $fuente, $texto);
@@ -39,4 +39,3 @@ header('Content-Type: image/png');
 // Usar imagepng() resultará en un texto más claro comparado con imagejpeg()
 imagepng($im);
 imagedestroy($im);
-?>
