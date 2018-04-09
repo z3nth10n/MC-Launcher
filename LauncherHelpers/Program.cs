@@ -28,7 +28,8 @@ namespace LauncherHelpers
             Console.WriteLine("1.- Generate weights from versions");
             Console.WriteLine("2.- Try to identify a version");
             Console.WriteLine("3.- Download JSONs, libraries and natives");
-            Console.WriteLine("4.- Exit");
+            Console.WriteLine("4.- Get execution parameters");
+            Console.WriteLine("5.- Exit");
             Console.WriteLine();
             Console.Write("Select what do you want to do: ");
             string c = Console.ReadLine();
@@ -40,80 +41,14 @@ namespace LauncherHelpers
                 string fversion = Path.Combine(API.AssemblyFolderPATH, "fversion.json");
 
                 //Prepare objects
-                JObject jobj = JObject.Parse(File.ReadAllText(fversion));
+                //Aunque esto deberia salir del metodo 1
+                JObject jobj = JObject.Parse(File.Exists(fversion) ? File.ReadAllText(fversion) : Convert.ToString(Properties.Resources.fversion));
                 IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
 
                 switch (opt)
                 {
                     case 1:
-                        //Get estimated version from weight from jsons
-                        //Esto se ejecutará si por ejemplo, el minecraft.jar no se encuentra, pero hay un jar de >1MB, con esto podremos estimar la version
-                        //Para luego sacar las librerias y todo el embrollo ese
-                        //Hacer esto cada semana, para que no se quede obsoleto el asunto
-                        Console.Clear();
-
-                        //Define folder of download
-                        string fold = Path.Combine(API.AssemblyFolderPATH, "Versions");
-
-                        if (!Directory.Exists(fold))
-                            Directory.CreateDirectory(fold);
-
-                        using (WebClient wc = new WebClient())
-                        {
-                            try
-                            {
-                                string json = wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"), json2;
-
-                                JObject jparse = JObject.Parse(json);
-
-                                JArray arr2 = new JArray(), arr3 = new JArray();
-
-                                //Para saber si debemos regenerar este archivo deberemos comprobar el ultimo archivo generado (su latest) con el de este...
-                                //Simplemente lo que se debe de hacer es que en el OnLoad del Launcher dumpear el archivo incustrado en los recursos y ya comprobamos lo que estamos hablando
-
-                                foreach (var j in jparse["versions"])
-                                {
-                                    string url = j["url"].ToString(), fname = Path.Combine(fold, Path.GetFileName(url));
-
-                                    if (!File.Exists(fname))
-                                        using (WebClient wc1 = new WebClient())
-                                        {
-                                            try
-                                            {
-                                                Console.WriteLine("Downloading {0}...", url);
-                                                json2 = wc1.DownloadString(url);
-                                                File.WriteAllText(fname, json2);
-                                            }
-                                            catch
-                                            {
-                                                Console.WriteLine("Wrong url!!");
-                                                return;
-                                            }
-                                        }
-                                    else
-                                        json2 = File.ReadAllText(fname);
-
-                                    JObject json2obj = JObject.Parse(json2);
-
-                                    //Now, we have to parse individual files
-                                    arr2.Add(new JObject(new JProperty("id", j["id"]),
-                                                         new JProperty("size", json2obj["downloads"]["client"]["size"])));
-
-                                    //Add recognized names...
-                                    arr3.Add(j["id"]);
-                                }
-
-                                File.WriteAllText(fversion, new JObject(new JProperty("creationTime", DateTime.Now), new JProperty("latest", jparse["latest"]), new JProperty("versions", arr2), new JProperty("recognizedVersions", arr3)).ToString());
-
-                                Console.WriteLine("File generated succesfully!!");
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("No internet conn!!");
-                                Console.WriteLine(ex);
-                                return;
-                            }
-                        }
+                        API.GenerateWeights(fversion);
                         break;
 
                     case 2:
@@ -124,13 +59,9 @@ namespace LauncherHelpers
                             return;
                         }
 
-                        Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
-
                         //Start parsing...
-                        DirectoryInfo dir = new DirectoryInfo(API.AssemblyFolderPATH);
-
                         //Select valid jars
-                        IEnumerable<FileInfo> files = dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
+                        IEnumerable<FileInfo> files = API.GetValidJars();
 
                         Console.WriteLine("There are {0} valid versions: {1}", files.Count(), string.Join(", ", files.Select(x => x.Name)));
                         Console.WriteLine();
@@ -141,90 +72,9 @@ namespace LauncherHelpers
                         foreach (FileInfo file in files)
                         {
                             //Console.WriteLine("Parsing file: {0}; Ext: {1}", file.Name, file.Extension);
-
-                            string woutext = file.Name.Replace(file.Extension, "");
-                            if (rvers.Contains(woutext))
-                            {
-                                Console.WriteLine("Found recognized version: {0}", woutext);
-
-                                jArray.Add(AddObject(file.Name, woutext));
-                                continue;
-                            }
-
-                            try
-                            {
-                                bool validJAR = false;
-
-                                validJAR = API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-                                {
-                                    //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                                    //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
-                                    //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
-
-                                    if (valid)
-                                        return true;
-
-                                    return false;
-                                });
-
-                                if (validJAR)
-                                {
-                                    Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
-                                    Console.WriteLine();
-                                    int dkb = 1; //Estimated balanced weight
-                                    weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
-
-                                    if (weights.Count == 1)
-                                    { //Aqui devolvemos la key del elemento 0
-                                        Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
-
-                                        jArray.Add(AddObject(file.Name, weights.ElementAt(0).Key));
-                                    }
-                                    else if (weights.Count > 1)
-                                    {
-                                        Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
-                                        weights.ForEach((x) =>
-                                        {
-                                            Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
-
-                                            //We have to discard, because we want only one result from DeeperSearch...
-                                            //If filename is not empty that means we want to dump into a file
-                                            //if (!string.IsNullOrEmpty(file.Name))
-                                            //    jArray.Add(new JObject(new JProperty("filename", file.Name), new JProperty("version", x.Key)));
-                                        });
-
-                                        Console.WriteLine();
-                                        Console.WriteLine("Searching for a maching version...");
-                                        Console.WriteLine();
-
-                                        jArray.Add(DeeperSearch(file, weights.Keys.AsEnumerable(), true));
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Your Minecraft JAR has changed a lot to be recognized as any established version, by this reason, we will make a deeper search... (Weight: {0})", file.Length);
-                                        Console.WriteLine();
-                                        //Raro que el minecraft-.jar esté aqui
-
-                                        jArray.Add(DeeperSearch(file, rvers, true));
-                                    }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
-                                    Console.WriteLine();
-
-                                    string validKey = API.GetForgeVersion(file.FullName)["jar"].ToString();
-
-                                    MsgValidKey(validKey);
-
-                                    jArray.Add(AddObject(file.Name, validKey));
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine("Not real JAR file!!");
-                                Console.WriteLine(ex);
-                            }
+                            JObject deeper = null;
+                            string version = API.GetVersionFromMinecraftJar(file, rvers, jobj, out deeper);
+                            jArray.Add(deeper != null ? deeper : API.AddObject(file.Name, version));
                         }
 
                         if (jArray != null)
@@ -241,6 +91,7 @@ namespace LauncherHelpers
                         if (File.Exists(API.Base64PATH))
                         {
                             JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(API.Base64PATH));
+
                             if (jArr.Count == 1)
                                 selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
                             else
@@ -346,12 +197,7 @@ namespace LauncherHelpers
                         Console.WriteLine();
 
                         //First we have to identify if we are on bin or in versions folder, to get the root
-                        string libpath = "";
-
-                        if (API.AssemblyFolderPATH.Contains("bin"))
-                            libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(), "libraries");
-                        else if (API.AssemblyFolderPATH.Contains("versions"))
-                            libpath = Path.Combine(API.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+                        string lPath = API.GetLibPath();
 
                         string ff = Path.Combine(API.AssemblyFolderPATH, selVersion.Key);
                         if (!API.IsValidJAR(ff))
@@ -375,7 +221,7 @@ namespace LauncherHelpers
                                 //http://store.ttyh.ru/ o ... github: https://github.com/ZZona-Dummies/jinput/raw/master/libraries/commons-codec/commons-codec/1.10/commons-codec-1.10.jar
 
                                 string urlRepo = API.GetUrlFromLibName(name),
-                                       libPath = Path.Combine(libpath, API.GetPathFromLibName(name, true));
+                                       libPath = Path.Combine(lPath, API.GetPathFromLibName(name, true));
 
                                 if (!string.IsNullOrEmpty(urlRepo))
                                     API.DownloadFile(libPath, urlRepo);
@@ -389,10 +235,10 @@ namespace LauncherHelpers
                         //Then, with the JSON we will start to download libraries...
                         //Libraries are divided into artifacts and classifiers...
 
-                        Console.WriteLine("LibPath: {0}", libpath);
+                        Console.WriteLine("LibPath: {0}", lPath);
                         Console.WriteLine();
 
-                        if (!string.IsNullOrEmpty(libpath))
+                        if (!string.IsNullOrEmpty(lPath))
                         {
                             foreach (var lib in jObject["libraries"])
                             {
@@ -415,7 +261,7 @@ namespace LauncherHelpers
                                                 //Here we have every object...
                                                 try
                                                 {
-                                                    API.DownloadFile(Path.Combine(libpath, API.CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                                                    API.DownloadFile(Path.Combine(lPath, API.CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
                                                 }
                                                 catch (Exception ex)
                                                 {
@@ -432,7 +278,7 @@ namespace LauncherHelpers
                                 //Download artifact...
                                 try
                                 {
-                                    API.DownloadFile(Path.Combine(libpath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                                    API.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
                                 }
                                 catch (Exception ex)
                                 {
@@ -454,6 +300,24 @@ namespace LauncherHelpers
                         break;
 
                     case 4:
+
+                        //{0} = RAM / 2
+                        //{1} = RAM / 16
+                        //{2} = D:\JUEGOS\Minecraft\Minecraft Pirata\versions\1.12.2\natives
+                        //{3} = D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\mojang\patchy\1.1\patchy - 1.1.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\oshi - project\oshi - core\1.1\oshi - core - 1.1.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\net\java\dev\jna\jna\4.4.0\jna - 4.4.0.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\net\java\dev\jna\platform\3.4.0\platform - 3.4.0.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\ibm\icu\icu4j - core - mojang\51.2\icu4j - core - mojang - 51.2.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\net\sf\jopt - simple\jopt - simple\5.0.3\jopt - simple - 5.0.3.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\paulscode\codecjorbis\20101023\codecjorbis - 20101023.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\paulscode\codecwav\20101023\codecwav - 20101023.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\paulscode\libraryjavasound\20101123\libraryjavasound - 20101123.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\paulscode\librarylwjglopenal\20100824\librarylwjglopenal - 20100824.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\paulscode\soundsystem\20120107\soundsystem - 20120107.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\io\netty\netty - all\4.1.9.Final\netty - all - 4.1.9.Final.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\google\guava\guava\21.0\guava - 21.0.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\commons\commons - lang3\3.5\commons - lang3 - 3.5.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\commons - io\commons - io\2.5\commons - io - 2.5.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\commons - codec\commons - codec\1.10\commons - codec - 1.10.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\net\java\jinput\jinput\2.0.5\jinput - 2.0.5.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\net\java\jutils\jutils\1.0.0\jutils - 1.0.0.jar; D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\google\code\gson\gson\2.8.0\gson-2.8.0.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\mojang\authlib\1.5.25\authlib-1.5.25.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\mojang\realms\1.10.19\realms-1.10.19.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\commons\commons-compress\1.8.1\commons-compress-1.8.1.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\httpcomponents\httpclient\4.3.3\httpclient-4.3.3.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\commons-logging\commons-logging\1.1.3\commons-logging-1.1.3.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\httpcomponents\httpcore\4.3.2\httpcore-4.3.2.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\it\unimi\dsi\fastutil\7.1.0\fastutil-7.1.0.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\logging\log4j\log4j-api\2.8.1\log4j-api-2.8.1.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\apache\logging\log4j\log4j-core\2.8.1\log4j-core-2.8.1.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\lwjgl\lwjgl\lwjgl\2.9.4-nightly-20150209\lwjgl-2.9.4-nightly-20150209.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\org\lwjgl\lwjgl\lwjgl_util\2.9.4-nightly-20150209\lwjgl_util-2.9.4-nightly-20150209.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\libraries\com\mojang\text2speech\1.10.3\text2speech-1.10.3.jar;D:\JUEGOS\Minecraft\Minecraft Pirata\versions\1.12.2\1.12.2.jar
+                        //{4} = Version
+                        //{5} = Username
+
+                        Console.WriteLine("Execution: {0}", "java or java_path");
+                        Console.WriteLine(@"Parameters: -Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties { } --version {4} --username {5}",
+                                            (API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)).ToString("F0"),
+                                            (API.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)).ToString("F0"),
+                                            Path.Combine(API.AssemblyFolderPATH, "natives"),
+                                            API.GetAllLibs(),
+                                            API.GetVersionFromMinecraftJar(API.GetValidJars().ElementAt(0).FullName));
+                        break;
+
+                    case 5:
                         Environment.Exit(0);
                         break;
 
@@ -469,50 +333,6 @@ namespace LauncherHelpers
                 App();
                 return;
             }
-        }
-
-        private static JObject DeeperSearch(FileInfo file, IEnumerable<string> col, bool dump = false)
-        {
-            string validKey = (string)API.ReadJAR(file.FullName, (zipfile, item, valid) =>
-            {
-                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                {
-                    // stream with the file
-                    string contents = s.ReadToEnd();
-
-                    foreach (string x in col)
-                        if (item.Name.Contains(".class") && contents.Contains(x))
-                        {
-                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
-                            Console.WriteLine();
-                            return x;
-                        }
-                }
-
-                return false;
-            });
-
-            MsgValidKey(validKey, col);
-
-            if (dump)
-                return AddObject(file.Name, validKey);
-            else
-                return null;
-        }
-
-        private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
-        {
-            if (!string.IsNullOrEmpty(validKey))
-                Console.WriteLine("Found valid version: {0}", validKey);
-            else
-                Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
-
-            Console.WriteLine();
-        }
-
-        private static JObject AddObject(string filename, string version)
-        {
-            return new JObject(new JProperty("filename", filename), new JProperty("version", version));
         }
     }
 }

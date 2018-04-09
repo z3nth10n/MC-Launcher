@@ -446,5 +446,262 @@ Func<T, bool> action)
         {
             return GetSO() != OS.Windows ? path : path.Replace('/', '\\');
         }
+
+        public static string GetLibPath()
+        {
+            string libpath = "";
+
+            if (AssemblyFolderPATH.Contains("bin"))
+                libpath = Path.Combine(AssemblyFolderPATH.GetUpperFolders(), "libraries");
+            else if (AssemblyFolderPATH.Contains("versions"))
+                libpath = Path.Combine(AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+
+            return libpath;
+        }
+
+        public static ulong GetTotalMemoryInBytes()
+        {
+            return new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
+        }
+
+        public static string GetAllLibs()
+        {
+            string libFolder = GetLibPath(),
+                   ret = "";
+
+            foreach (string file in Directory.GetFiles(libFolder))
+                ret += file + ";";
+
+            if (!string.IsNullOrEmpty(ret))
+                return ret.Substring(0, ret.Length - 2);
+            else
+            {
+                Console.WriteLine("Null lib folder!");
+                return "";
+            }
+        }
+
+        public static string GetVersionFromMinecraftJar(string path)
+        {
+            JObject deeper = null;
+
+            JObject jobj = JObject.Parse(File.ReadAllText(GenerateWeights()));
+            IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
+
+            return GetVersionFromMinecraftJar(new FileInfo(path), rvers, jobj, out deeper);
+        }
+
+        public static string GetVersionFromMinecraftJar(FileInfo file, IEnumerable<string> rvers, JObject jobj, out JObject deeper)
+        {
+            Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
+
+            string version = "",
+                   woutext = file.Name.Replace(file.Extension, "");
+
+            if (rvers.Contains(woutext))
+            {
+                Console.WriteLine("Found recognized version: {0}", woutext);
+
+                deeper = null;
+                return version;
+            }
+
+            try
+            {
+                if (IsValidJAR(file.FullName))
+                {
+                    Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
+                    Console.WriteLine();
+                    int dkb = 1; //Estimated balanced weight
+                    weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
+
+                    if (weights.Count == 1)
+                    { //Aqui devolvemos la key del elemento 0
+                        Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
+
+                        deeper = null;
+                        return weights.ElementAt(0).Key;
+                    }
+                    else if (weights.Count > 1)
+                    {
+                        Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
+                        weights.ForEach((x) =>
+                        {
+                            Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
+
+                            //We have to discard, because we want only one result from DeeperSearch...
+                            //If filename is not empty that means we want to dump into a file
+                            //if (!string.IsNullOrEmpty(file.Name))
+                            //    jArray.Add(new JObject(new JProperty("filename", file.Name), new JProperty("version", x.Key)));
+                        });
+
+                        Console.WriteLine();
+                        Console.WriteLine("Searching for a maching version...");
+                        Console.WriteLine();
+
+                        deeper = DeeperSearch(file, weights.Keys.AsEnumerable(), out version, true);
+                        return version;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Your Minecraft JAR has changed a lot to be recognized as any established version, by this reason, we will make a deeper search... (Weight: {0})", file.Length);
+                        Console.WriteLine();
+                        //Raro que el minecraft-.jar esté aqui
+
+                        deeper = DeeperSearch(file, rvers, out version, true);
+                        return version;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
+                    Console.WriteLine();
+
+                    version = GetForgeVersion(file.FullName)["jar"].ToString();
+
+                    MsgValidKey(version);
+
+                    deeper = AddObject(file.Name, version);
+                    return version;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Not real JAR file!!");
+                Console.WriteLine(ex);
+            }
+
+            deeper = null;
+            return version;
+        }
+
+        public static JObject DeeperSearch(FileInfo file, IEnumerable<string> col, out string validKey, bool dump = false)
+        {
+            validKey = (string)ReadJAR(file.FullName, (zipfile, item, valid) =>
+            {
+                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                {
+                    // stream with the file
+                    string contents = s.ReadToEnd();
+
+                    foreach (string x in col)
+                        if (item.Name.Contains(".class") && contents.Contains(x))
+                        {
+                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
+                            Console.WriteLine();
+                            return x;
+                        }
+                }
+
+                return false;
+            });
+
+            MsgValidKey(validKey, col);
+
+            if (dump)
+                return AddObject(file.Name, validKey);
+            else
+                return null;
+        }
+
+        public static JObject AddObject(string filename, string version)
+        {
+            return new JObject(new JProperty("filename", filename), new JProperty("version", version));
+        }
+
+        private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
+        {
+            if (!string.IsNullOrEmpty(validKey))
+                Console.WriteLine("Found valid version: {0}", validKey);
+            else
+                Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
+
+            Console.WriteLine();
+        }
+
+        public static string GenerateWeights(string fverPath = "")
+        {
+            //Get estimated version from weight from jsons
+            //Esto se ejecutará si por ejemplo, el minecraft.jar no se encuentra, pero hay un jar de >1MB, con esto podremos estimar la version
+            //Para luego sacar las librerias y todo el embrollo ese
+            //Hacer esto cada semana, para que no se quede obsoleto el asunto
+            Console.Clear();
+
+            //Define folder of download
+            string fold = Path.Combine(AssemblyFolderPATH, "Versions");
+
+            if (!Directory.Exists(fold))
+                Directory.CreateDirectory(fold);
+
+            using (WebClient wc = new WebClient())
+            {
+                try
+                {
+                    string json = wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"), json2;
+
+                    JObject jparse = JObject.Parse(json);
+
+                    JArray arr2 = new JArray(), arr3 = new JArray();
+
+                    //Para saber si debemos regenerar este archivo deberemos comprobar el ultimo archivo generado (su latest) con el de este...
+                    //Simplemente lo que se debe de hacer es que en el OnLoad del Launcher dumpear el archivo incustrado en los recursos y ya comprobamos lo que estamos hablando
+
+                    foreach (var j in jparse["versions"])
+                    {
+                        string url = j["url"].ToString(), fname = Path.Combine(fold, Path.GetFileName(url));
+
+                        if (!File.Exists(fname))
+                            using (WebClient wc1 = new WebClient())
+                            {
+                                try
+                                {
+                                    Console.WriteLine("Downloading {0}...", url);
+                                    json2 = wc1.DownloadString(url);
+                                    File.WriteAllText(fname, json2);
+                                }
+                                catch
+                                {
+                                    Console.WriteLine("Wrong url!!");
+                                    return "";
+                                }
+                            }
+                        else
+                            json2 = File.ReadAllText(fname);
+
+                        JObject json2obj = JObject.Parse(json2);
+
+                        //Now, we have to parse individual files
+                        arr2.Add(new JObject(new JProperty("id", j["id"]),
+                                             new JProperty("size", json2obj["downloads"]["client"]["size"])));
+
+                        //Add recognized names...
+                        arr3.Add(j["id"]);
+                    }
+
+                    string ret = new JObject(new JProperty("creationTime", DateTime.Now), new JProperty("latest", jparse["latest"]), new JProperty("versions", arr2), new JProperty("recognizedVersions", arr3)).ToString();
+
+                    if (!string.IsNullOrEmpty(fverPath))
+                        File.WriteAllText(fverPath, ret);
+
+                    Console.WriteLine("File generated succesfully!!");
+
+                    return ret;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("No internet conn!!");
+                    Console.WriteLine(ex);
+                    return "";
+                }
+            }
+        }
+
+        public static IEnumerable<FileInfo> GetValidJars()
+        {
+            DirectoryInfo dir = new DirectoryInfo(API.AssemblyFolderPATH);
+
+            //Select valid jars
+            return dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
+        }
     }
 }

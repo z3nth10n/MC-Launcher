@@ -59,5 +59,15 @@ namespace LauncherHelpers.Properties {
                 resourceCulture = value;
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        public static byte[] fversion {
+            get {
+                object obj = ResourceManager.GetObject("fversion", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }
