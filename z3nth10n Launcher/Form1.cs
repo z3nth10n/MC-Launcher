@@ -74,11 +74,20 @@ namespace z3nth10n_Launcher
 
             ApiLauncher.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
             {
-                BeginInvoke((MethodInvoker)delegate
+                Invoke((MethodInvoker)delegate
                 {
-                    double percentage = bytesIn / totalBytes * 100d;
+                    double percentage = (double)bytesIn / totalBytes * 100d;
                     lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", fileName, (int)percentage, (bytesSec / 1024d).ToString("F2"));
                     progressBar1.Value = (int)percentage;
+                });
+            };
+
+            ApiLauncher.dlCompleted = () =>
+            {
+                Invoke((MethodInvoker)delegate
+                { //WIP ... necesita algunos reajustes
+                    lblProgress.Text = "Download completed!!";
+                    Console.WriteLine("Download completed!!");
                 });
             };
         }
@@ -122,7 +131,8 @@ namespace z3nth10n_Launcher
             pnlMain.SendToBack();
             pnlMain.Visible = false;
             //Controls.Remove(pnlMain);
-            ApiLauncher.DownloadLibraries();
+            string str = ApiLauncher.DownloadLibraries();
+            Console.WriteLine(string.IsNullOrEmpty(str) ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
         }
     }
 }

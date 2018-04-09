@@ -208,19 +208,21 @@ namespace LauncherAPI
             return GetVersionFromMinecraftJar(new FileInfo(path), rvers, jobj, out deeper);
         }
 
-        public static string GetVersionFromMinecraftJar(FileInfo file, IEnumerable<string> rvers, JObject jobj, out JObject deeper)
+        public static string GetVersionFromMinecraftJar(FileInfo file, IEnumerable<string> rvers, JObject jobj, out JObject deeper, int dkb = 1)
         {
             Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
 
             string version = "",
                    woutext = file.Name.Replace(file.Extension, "");
 
+            //Console.WriteLine("Count: {0}; Woutext: {1}", rvers.Count(), woutext);
+
             if (rvers.Contains(woutext))
             {
                 Console.WriteLine("Found recognized version: {0}", woutext);
 
                 deeper = null;
-                return version;
+                return woutext;
             }
 
             try
@@ -229,7 +231,7 @@ namespace LauncherAPI
                 {
                     Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
                     Console.WriteLine();
-                    int dkb = 1; //Estimated balanced weight
+                    //DKB is Estimated balanced weight
                     weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
 
                     if (weights.Count == 1)
@@ -345,59 +347,12 @@ namespace LauncherAPI
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
 
+            string json = "", json2;
             using (WebClient wc = new WebClient())
             {
                 try
                 {
-                    string json = wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"), json2;
-
-                    JObject jparse = JObject.Parse(json);
-
-                    JArray arr2 = new JArray(), arr3 = new JArray();
-
-                    //Para saber si debemos regenerar este archivo deberemos comprobar el ultimo archivo generado (su latest) con el de este...
-                    //Simplemente lo que se debe de hacer es que en el OnLoad del Launcher dumpear el archivo incustrado en los recursos y ya comprobamos lo que estamos hablando
-
-                    foreach (var j in jparse["versions"])
-                    {
-                        string url = j["url"].ToString(), fname = Path.Combine(fold, Path.GetFileName(url));
-
-                        if (!File.Exists(fname))
-                            using (WebClient wc1 = new WebClient())
-                            {
-                                try
-                                {
-                                    Console.WriteLine("Downloading {0}...", url);
-                                    json2 = wc1.DownloadString(url);
-                                    File.WriteAllText(fname, json2);
-                                }
-                                catch
-                                {
-                                    Console.WriteLine("Wrong url!!");
-                                    return "";
-                                }
-                            }
-                        else
-                            json2 = File.ReadAllText(fname);
-
-                        JObject json2obj = JObject.Parse(json2);
-
-                        //Now, we have to parse individual files
-                        arr2.Add(new JObject(new JProperty("id", j["id"]),
-                                             new JProperty("size", json2obj["downloads"]["client"]["size"])));
-
-                        //Add recognized names...
-                        arr3.Add(j["id"]);
-                    }
-
-                    string ret = new JObject(new JProperty("creationTime", DateTime.Now), new JProperty("latest", jparse["latest"]), new JProperty("versions", arr2), new JProperty("recognizedVersions", arr3)).ToString();
-
-                    if (!string.IsNullOrEmpty(fverPath))
-                        File.WriteAllText(fverPath, ret);
-
-                    Console.WriteLine("File generated succesfully!!");
-
-                    return ret;
+                    json = wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json");
                 }
                 catch (Exception ex)
                 {
@@ -406,6 +361,58 @@ namespace LauncherAPI
                     return "";
                 }
             }
+
+            JObject jparse = JObject.Parse(json);
+
+            JArray arr2 = new JArray(), arr3 = new JArray();
+
+            //Para saber si debemos regenerar este archivo deberemos comprobar el ultimo archivo generado (su latest) con el de este...
+            //Simplemente lo que se debe de hacer es que en el OnLoad del Launcher dumpear el archivo incustrado en los recursos y ya comprobamos lo que estamos hablando
+
+            foreach (var j in jparse["versions"])
+            {
+                string url = j["url"].ToString(), fname = Path.Combine(fold, Path.GetFileName(url));
+
+                if (!File.Exists(fname))
+                {
+                    using (WebClient wc1 = new WebClient())
+                    {
+                        Console.WriteLine("Downloading {0}...", url);
+
+                        try
+                        {
+                            json2 = wc1.DownloadString(url);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("Wrong url!!");
+                            return "";
+                        }
+                    }
+
+                    File.WriteAllText(fname, json2);
+                }
+                else
+                    json2 = File.ReadAllText(fname);
+
+                JObject json2obj = JObject.Parse(json2);
+
+                //Now, we have to parse individual files
+                arr2.Add(new JObject(new JProperty("id", j["id"]),
+                                     new JProperty("size", json2obj["downloads"]["client"]["size"])));
+
+                //Add recognized names...
+                arr3.Add(j["id"]);
+            }
+
+            string ret = new JObject(new JProperty("creationTime", DateTime.Now), new JProperty("latest", jparse["latest"]), new JProperty("versions", arr2), new JProperty("recognizedVersions", arr3)).ToString();
+
+            if (!string.IsNullOrEmpty(fverPath))
+                File.WriteAllText(fverPath, ret);
+
+            Console.WriteLine("File generated succesfully!!");
+
+            return ret;
         }
 
         public static IEnumerable<FileInfo> GetValidJars()
@@ -421,19 +428,24 @@ namespace LauncherAPI
             JObject jobj = JObject.Parse(GenerateWeights());
             IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
 
-            return DownloadLibraries(rvers);
+            return DownloadLibraries(rvers, jobj);
         }
 
-        public static string DownloadLibraries(IEnumerable<string> rvers)
+        public static string DownloadLibraries(IEnumerable<string> rvers, JObject jObj)
         {
             //First, we have to select the wanted version, in my case, I will do silly things to select the desired version...
 
-            object selObj = GetSelVersion(rvers);
+            object selObj = GetSelVersion(rvers, jObj);
 
             if (selObj.GetType().Equals(typeof(string)))
-                return (string)selObj;
+            {
+                string rr = (string)selObj;
+                Console.WriteLine("{0}", rr);
+                return rr;
+            }
 
             KeyValuePair<string, string> selVersion = (KeyValuePair<string, string>)selObj;
+            //Console.WriteLine("{Key: '{0}'; Value: '{1}'}", selVersion.Key, selVersion.Value);
 
             //Then, start downloading...
 
@@ -447,7 +459,7 @@ namespace LauncherAPI
             //Generate libraries
 
             //First we have to download the desired json...
-            string jsonPath = DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+            string jsonPath = DownloadSyncFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
             JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
             Console.WriteLine();
@@ -533,6 +545,7 @@ namespace LauncherAPI
                     Console.WriteLine("Classifiers are null!");
                     return;
                 }
+
                 foreach (var child in clssf.Children())
                 {
                     string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
@@ -616,38 +629,80 @@ namespace LauncherAPI
             DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
         }
 
-        private static object GetSelVersion(IEnumerable<string> rvers)
+        public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj)
+        {
+            JArray jArr = null;
+            return GenerateBase64File(rvers, jobj, out jArr);
+        }
+
+        public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj, out JArray jArrOutput)
+        {
+            IEnumerable<FileInfo> files = GetValidJars();
+            //Console.WriteLine("Count: {0}", files.Count());
+
+            Console.WriteLine();
+
+            JArray jArray = new JArray();
+
+            foreach (FileInfo file in files)
+            {
+                JObject deeper = null;
+                string version = GetVersionFromMinecraftJar(file, rvers, jobj, out deeper);
+                jArray.Add(deeper != null ? deeper : AddObject(file.Name, version));
+            }
+
+            if (!(jArray is null))
+                File.WriteAllText(ApiBasics.Base64PATH, jArray.ToString());
+
+            jArrOutput = jArray;
+            return files;
+        }
+
+        private static object GetSelVersion(IEnumerable<string> rvers, JObject jObj)
         {
             KeyValuePair<string, string> selVersion;
 
-            if (File.Exists(ApiBasics.Base64PATH))
+            bool exists = File.Exists(ApiBasics.Base64PATH),
+                 isConsole = ApiBasics.IsConsole;
+
+            //Console.WriteLine(exists || !isConsole);
+
+            if (exists || !isConsole)
             {
-                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(ApiBasics.Base64PATH));
+                JArray jArr = isConsole ? JsonConvert.DeserializeObject<JArray>(File.ReadAllText(ApiBasics.Base64PATH)) : null;
+                if (jArr == null) GenerateBase64File(rvers, jObj, out jArr);
 
                 if (jArr.Count == 1)
                     selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
                 else
                 {
-                    Console.WriteLine("There are several files in this folder, please select one of them:");
-                    Console.WriteLine();
-
-                    int i = 1;
+                    //Console.WriteLine(jArr.ToString());
                     Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
-                    foreach (var entry in filver)
+
+                    if (isConsole)
                     {
-                        Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
-                        ++i;
+                        Console.WriteLine("There are several files in this folder, please select one of them:");
+                        Console.WriteLine();
+
+                        int i = 1;
+                        foreach (var entry in filver)
+                        {
+                            Console.WriteLine("{0}.- {1} ({2})", i, entry.Key, entry.Value);
+                            ++i;
+                        }
+
+                        Console.WriteLine();
+                        Console.Write("Select one of them: ");
+                        string opt1 = Console.ReadLine();
+
+                        int num = 0;
+                        if (int.TryParse(opt1, out num))
+                            selVersion = filver.ElementAt(num - 1);
+                        else
+                            return "Please specify a numeric value.";
                     }
-
-                    Console.WriteLine();
-                    Console.Write("Select one of them: ");
-                    string opt1 = Console.ReadLine();
-
-                    int num = 0;
-                    if (int.TryParse(opt1, out num))
-                        selVersion = filver.ElementAt(num - 1);
                     else
-                        return "Please specify a numeric value.";
+                        selVersion = filver.ElementAt(0);
                 }
             }
             else
@@ -723,6 +778,28 @@ namespace LauncherAPI
         public static string DownloadFile(string path, string url, bool overwrite = false)
         {
             return ApiBasics.DownloadFile(path, url, dlProgressChanged, dlCompleted, overwrite);
+        }
+
+        public static string DownloadSyncFile(string path, string url, bool overwrite = false)
+        {
+            if (ApiBasics.PreviousChk(path) || overwrite)
+            {
+                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
+                try
+                {
+                    using (WebClient wc = new WebClient())
+                        wc.DownloadFile(new Uri(url), path);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("There was a problem downloading {0}...", url);
+                    Console.WriteLine(ex);
+                }
+            }
+            else
+                Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
+
+            return path;
         }
 
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)

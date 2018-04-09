@@ -51,7 +51,24 @@ namespace LauncherAPI
         {
             get
             {
+                //Console.WriteLine("xxx: " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "natives"));
                 return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            }
+        }
+
+        private static bool? _IsConsole;
+
+        public static bool IsConsole
+        {
+            get
+            {
+                if (_IsConsole == null)
+                {
+                    _IsConsole = true;
+                    try { int window_height = Console.WindowHeight; }
+                    catch { _IsConsole = false; }
+                }
+                return _IsConsole.Value;
             }
         }
 
@@ -213,8 +230,16 @@ namespace LauncherAPI
                 {
                     using (WebClient wc = new WebClient())
                     {
-                        if (dlProgressChanged != null) wc.DownloadProgressChanged += new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, Path.GetFileName(path)); });
-                        if (dlCompleted != null) wc.DownloadFileCompleted += new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted); });
+                        AsyncCompletedEventHandler aCEH = null;
+
+                        DownloadProgressChangedEventHandler dlProgressChangedEventHadler = new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, Path.GetFileName(path)); });
+                        AsyncCompletedEventHandler asyncCompletedEventHandler = new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted, dlProgressChangedEventHadler, aCEH); });
+
+                        aCEH = asyncCompletedEventHandler;
+
+                        if (dlProgressChanged != null) wc.DownloadProgressChanged += dlProgressChangedEventHadler;
+                        if (dlCompleted != null) wc.DownloadFileCompleted += asyncCompletedEventHandler;
+
                         wc.DownloadFileAsync(new Uri(url), path);
                     }
                 });
@@ -235,13 +260,18 @@ namespace LauncherAPI
             {
                 lastUpdate = DateTime.Now;
                 lastBytes = e.BytesReceived;
-                return;
             }
 
             DateTime now = DateTime.Now;
             TimeSpan timeSpan = now - lastUpdate;
             long bytesChange = e.BytesReceived - lastBytes,
-                 bytesPerSecond = bytesChange / timeSpan.Seconds;
+                 bytesPerSecond = 0;
+
+            try
+            {
+                bytesPerSecond = bytesChange / timeSpan.Seconds;
+            }
+            catch { }
 
             dlProgressChanged(e.BytesReceived, e.TotalBytesToReceive, file, bytesPerSecond);
 
@@ -249,9 +279,14 @@ namespace LauncherAPI
             lastUpdate = now;
         }
 
-        private static void Wc_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e, Action dlCompleted)
+        private static void Wc_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e, Action dlCompleted, DownloadProgressChangedEventHandler dlProgressChangedEventHadler, AsyncCompletedEventHandler asyncCompletedEventHandler)
         {
             dlCompleted();
+
+            WebClient wc = ((WebClient)sender);
+
+            wc.DownloadProgressChanged -= dlProgressChangedEventHadler;
+            wc.DownloadFileCompleted -= asyncCompletedEventHandler;
         }
 
         public static void WriteLineStop(string val = "")

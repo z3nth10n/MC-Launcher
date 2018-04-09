@@ -67,33 +67,23 @@ namespace LauncherHelpers
 
                         //Start parsing...
                         //Select valid jars
-                        IEnumerable<FileInfo> files = ApiLauncher.GetValidJars();
+
+                        IEnumerable<FileInfo> files = ApiLauncher.GenerateBase64File(rvers, jobj);
 
                         Console.WriteLine("There are {0} valid versions: {1}", files.Count(), string.Join(", ", files.Select(x => x.Name)));
-                        Console.WriteLine();
-
-                        JArray jArray = new JArray();
-
-                        foreach (FileInfo file in files)
-                        {
-                            JObject deeper = null;
-                            string version = ApiLauncher.GetVersionFromMinecraftJar(file, rvers, jobj, out deeper);
-                            jArray.Add(deeper != null ? deeper : ApiLauncher.AddObject(file.Name, version));
-                        }
-
-                        if (!(jArray is null))
-                            File.WriteAllText(ApiBasics.Base64PATH, jArray.ToString());
                         break;
 
                     case 3:
-                        string errorStr = ApiLauncher.DownloadLibraries(rvers);
+                        string errorStr = ApiLauncher.DownloadLibraries(rvers, jobj);
 
                         if (!string.IsNullOrEmpty(errorStr))
                         {
-                            ApiBasics.WriteLineStop(errorStr);
+                            Console.WriteLine(errorStr);
                             App();
                             return;
                         }
+                        else
+                            Console.WriteLine("WTF");
                         break;
 
                     case 4:
