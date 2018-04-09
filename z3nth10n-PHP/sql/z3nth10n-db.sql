@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `hourlystats` (
   `id` int(11) NOT NULL,
-  `date` int(11) NOT NULL,
+  `stat_date` int(11) NOT NULL,
   `launcher_hits` int(11) NOT NULL,
   `play_hits` int(11) NOT NULL,
   `maxccusers` int(11) NOT NULL
