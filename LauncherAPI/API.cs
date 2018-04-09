@@ -364,8 +364,10 @@ Func<T, bool> action)
         public static string GetUpperFolders(this string cpath, int levels = 1)
         {
             if (!IsDirectory(cpath)) cpath = Path.GetDirectoryName(cpath);
+
             for (int i = 0; i < levels; ++i)
                 cpath = Path.GetDirectoryName(cpath);
+
             return cpath;
         }
 
@@ -376,7 +378,7 @@ Func<T, bool> action)
 
         public static string CleverSubstring(this string str, int limit = 50)
         {
-            return str.Length >= limit ? str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1) : str;
+            return str.Length >= limit ? str.Substring(0, (limit / 2)) + "..." + str.Substring(str.Length - (limit / 2 - 1)) : str;
         }
 
         public static JObject GetForgeVersion(string path)
