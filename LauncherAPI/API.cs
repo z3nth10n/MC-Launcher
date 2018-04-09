@@ -837,14 +837,32 @@ Func<T, bool> action)
             //First we have to identify if we are on bin or in versions folder, to get the root
             string lPath = GetLibPath();
 
-            string ff = Path.Combine(AssemblyFolderPATH, selVersion.Key);
-            if (!IsValidJAR(ff))
+            string forgeFile = Path.Combine(AssemblyFolderPATH, selVersion.Key);
+            DownloadForgeLibraries(forgeFile, lPath, selVersion, jObject);
+
+            //Then, with the JSON we will start to download libraries...
+            //Libraries are divided into artifacts and classifiers...
+
+            Console.WriteLine("LibPath: {0}", lPath);
+            Console.WriteLine();
+
+            if (!string.IsNullOrEmpty(lPath))
+                DownloadNativeLibraries(lPath, jObject);
+            else
+                return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
+
+            return "";
+        }
+
+        private static void DownloadForgeLibraries(string forgeFile, string lPath, KeyValuePair<string, string> selVersion, JObject jObject)
+        {
+            if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
                 DownloadFile(Path.Combine(AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
-                JObject forgeObj = GetForgeVersion(ff);
+                JObject forgeObj = GetForgeVersion(forgeFile);
 
                 //Aqui tenemos que descargar las librerias del forge
 
@@ -869,69 +887,60 @@ Func<T, bool> action)
 
                 Console.WriteLine();
             }
+        }
 
-            //Then, with the JSON we will start to download libraries...
-            //Libraries are divided into artifacts and classifiers...
-
-            Console.WriteLine("LibPath: {0}", lPath);
-            Console.WriteLine();
-
-            if (!string.IsNullOrEmpty(lPath))
+        private static void DownloadNativeLibraries(string lPath, JObject jObject)
+        {
+            foreach (JToken lib in jObject["libraries"])
             {
-                foreach (var lib in jObject["libraries"])
+                JToken dl = lib["downloads"],
+                       clssf = dl["classifiers"],
+                       artf = dl["artifact"];
+
+                if (clssf != null)
                 {
-                    JToken dl = lib["downloads"],
-                           clssf = dl["classifiers"],
-                           artf = dl["artifact"];
-
-                    if (clssf != null)
+                    foreach (var child in clssf.Children())
                     {
-                        foreach (var child in clssf.Children())
-                        {
-                            string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
-                                   soid = GetSO().ToString().ToLower();
+                        string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
+                               soid = GetSO().ToString().ToLower();
 
-                            if (name.Contains(soid))
-                            { //With this, we ensure that we select "natives-windows" (in my case)
-                                var nats = child.OfType<JObject>();
-                                foreach (var tok in nats)
+                        if (name.Contains(soid))
+                        { //With this, we ensure that we select "natives-windows" (in my case)
+                            var nats = child.OfType<JObject>();
+                            foreach (var tok in nats)
+                            {
+                                //Here we have every object...
+                                try
                                 {
-                                    //Here we have every object...
-                                    try
-                                    {
-                                        DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Console.WriteLine();
-                                        Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
-                                        Console.WriteLine(ex);
-                                        Console.WriteLine();
-                                    }
+                                    DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                                }
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine();
+                                    Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
+                                    Console.WriteLine(ex);
+                                    Console.WriteLine();
                                 }
                             }
                         }
                     }
-
-                    //Download artifact...
-                    try
-                    {
-                        DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine();
-                        Console.WriteLine("Couldn't download artifact!! (DL-Path: {0})", dl.Path);
-                        Console.WriteLine(ex);
-                        Console.WriteLine();
-                    }
                 }
 
-                Console.WriteLine();
+                //Download artifact...
+                try
+                {
+                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("Couldn't download artifact!! (DL-Path: {0})", dl.Path);
+                    Console.WriteLine(ex);
+                    Console.WriteLine();
+                }
             }
-            else
-                return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
-            return "";
+
+            Console.WriteLine();
         }
     }
 }
