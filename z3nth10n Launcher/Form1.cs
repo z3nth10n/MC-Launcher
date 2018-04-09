@@ -48,7 +48,6 @@ namespace z3nth10n_Launcher
                     File.WriteAllBytes(f, Properties.Resources.MBold);
 
                 PrivateFontCollection pfc = new PrivateFontCollection();
-                //string f = Program.URLToLocalFile("https://github.com/z3nth10n/MC-Launcher/raw/master/z3nth10n%20Launcher/Resources/Minecraft.ttf"); //"https://github.com/z3nth10n/MC-Launcher/raw/master/z3nth10n%20Launcher/Resources/MBold.otf");
 
                 pfc.AddFontFile(f); //Aun asi no funciona, solo en WIN
 
@@ -58,14 +57,6 @@ namespace z3nth10n_Launcher
             }
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
-        }
-
-        private void Form1_Shown(object sender, EventArgs e)
-        {
-        }
-
-        private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
-        {
         }
 
         //Funcs

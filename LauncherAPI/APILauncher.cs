@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 namespace LauncherAPI
 {
@@ -68,10 +69,6 @@ namespace LauncherAPI
         {
             return ReadJAR(file, (zipfile, entry, valid) =>
             {
-                //DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-                //string ss = entry.Info.Substring(entry.Info.IndexOf("Timeblob"));
-                //Console.WriteLine(epoch.AddSeconds(int.Parse(ss.Substring(0, ss.IndexOf('\n')).Replace("Timeblob: 0x", ""), NumberStyles.HexNumber)).ToString("dd/MM/yyyy", CultureInfo.InvariantCulture));
-
                 return valid;
             });
         }
@@ -164,15 +161,19 @@ namespace LauncherAPI
 
         public static string GetAllLibs(bool outputDebug = false)
         {
-            string libFolder = GetLibPath(),
-                   ret = "";
+            string libFolder = GetLibPath();
+            StringBuilder ret = new StringBuilder();
+            IEnumerable<string> files = DirSearch(libFolder).AsEnumerable();
 
-            foreach (string file in DirSearch(libFolder))
-                ret += file + ";";
-
-            if (!string.IsNullOrEmpty(ret))
+            foreach (string file in files)
             {
-                string rr = ret.Substring(0, ret.Length - 1);
+                ret.Append(file);
+                if (files.Last() != file) ret.Append(";");
+            }
+
+            string rr = ret.ToString();
+            if (!string.IsNullOrEmpty(rr))
+            {
                 if (outputDebug) Console.WriteLine(rr);
                 return rr;
             }
@@ -254,8 +255,6 @@ namespace LauncherAPI
 
                             //We have to discard, because we want only one result from DeeperSearch...
                             //If filename is not empty that means we want to dump into a file
-                            //if (!string.IsNullOrEmpty(file.Name))
-                            //    jArray.Add(new JObject(new JProperty("filename", file.Name), new JProperty("version", x.Key)));
                         });
 
                         Console.WriteLine();
@@ -324,7 +323,7 @@ namespace LauncherAPI
             if (dump)
                 return AddObject(file.Name, validKey);
             else
-                return null;
+                return default(JObject);
         }
 
         public static JObject AddObject(string filename, string version)
@@ -430,7 +429,7 @@ namespace LauncherAPI
 
             object selObj = GetSelVersion(rvers);
 
-            if (selObj.GetType() == typeof(string))
+            if (selObj.GetType() is typeof(string))
                 return (string)selObj;
 
             KeyValuePair<string, string> selVersion = (KeyValuePair<string, string>)selObj;
@@ -492,7 +491,7 @@ namespace LauncherAPI
                     //http://central.maven.org/maven2/org/scala-lang/modules/scala-xml_2.11/1.0.2/
                     //http://files.minecraftforge.net/maven/
                     //y...
-                    //http://store.ttyh.ru/ o ... github: https://github.com/ZZona-Dummies/jinput/raw/master/libraries/commons-codec/commons-codec/1.10/commons-codec-1.10.jar
+                    //http://store.ttyh.ru/ o ... github: https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/libraries/commons-codec/commons-codec/1.10/commons-codec-1.10.jar
 
                     string urlRepo = GetUrlFromLibName(name),
                            libPath = Path.Combine(lPath, GetPathFromLibName(name, true));
@@ -515,35 +514,6 @@ namespace LauncherAPI
                        clssf = dl["classifiers"],
                        artf = dl["artifact"];
 
-                if (clssf != null)
-                {
-                    foreach (var child in clssf.Children())
-                    {
-                        string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
-                               soid = APIBasics.GetSO().ToString().ToLower();
-
-                        if (name.Contains(soid))
-                        { //With this, we ensure that we select "natives-windows" (in my case)
-                            var nats = child.OfType<JObject>();
-                            foreach (var tok in nats)
-                            {
-                                //Here we have every object...
-                                try
-                                {
-                                    APIBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
-                                }
-                                catch (Exception ex)
-                                {
-                                    Console.WriteLine();
-                                    Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
-                                    Console.WriteLine(ex);
-                                    Console.WriteLine();
-                                }
-                            }
-                        }
-                    }
-                }
-
                 //Download artifact...
                 try
                 {
@@ -556,6 +526,38 @@ namespace LauncherAPI
                     Console.WriteLine(ex);
                     Console.WriteLine();
                 }
+
+                if (clssf == null)
+                {
+                    Console.WriteLine("Classifiers are null!");
+                    return;
+                }
+                foreach (var child in clssf.Children())
+                {
+                    string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
+                           soid = APIBasics.GetSO().ToString().ToLower();
+
+                    if (!name.Contains(soid))
+                        continue;
+
+                    //With this, we ensure that we select "natives-windows" (in my case)
+                    var nats = child.OfType<JObject>();
+                    foreach (var tok in nats)
+                    {
+                        //Here we have every object...
+                        try
+                        {
+                            APIBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine();
+                            Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
+                            Console.WriteLine(ex);
+                            Console.WriteLine();
+                        }
+                    }
+                }
             }
 
             Console.WriteLine();
@@ -567,27 +569,29 @@ namespace LauncherAPI
             switch (APIBasics.GetSO())
             {
                 case OS.Windows:
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
+                    string preWindows = "https://build.lwjgl.org/release/latest/windows";
+
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows));
                     APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
                     APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
                     APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
 
                     //JInput
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-dx8.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-raw.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-raw_64.dll");
 
                     //WinTab case
 
                     if (Environment.Is64BitOperatingSystem)
-                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
+                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-wintab.dll");
                     else
-                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
+                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-wintab.dll");
 
                     //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
                     break;
 
                 case OS.Linux:
@@ -601,14 +605,14 @@ namespace LauncherAPI
 
             //Download common jars...
 
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/jinput.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/lwjgl.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/lwjgl_util.jar");
         }
 
         private static object GetSelVersion(IEnumerable<string> rvers)
         {
-            KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
+            KeyValuePair<string, string> selVersion;
 
             if (File.Exists(APIBasics.Base64PATH))
             {
@@ -657,7 +661,6 @@ namespace LauncherAPI
 
         public static ProcessStartInfo GenerateLaunchProccess()
         {
-            //Console.WriteLine("JAVA_HOME: " + Environment.GetEnvironmentVariable("JAVA_HOME"));
             ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que conseguir obtener el directiorio de instalacion en cualquier caso
 
             startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",

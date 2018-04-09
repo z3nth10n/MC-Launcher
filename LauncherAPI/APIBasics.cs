@@ -125,7 +125,7 @@ namespace LauncherAPI
             }
 
             if (string.IsNullOrEmpty(fil))
-                throw new Exception("Coudn't retrieve file name.");
+                Console.WriteLine("Coudn't retrieve file name.");
 
             return fil;
         }

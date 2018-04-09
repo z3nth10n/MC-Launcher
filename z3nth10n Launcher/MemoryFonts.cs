@@ -28,7 +28,7 @@ namespace z3nth10n_Launcher
             pfc.AddMemoryFont(p, fontResource.Length);
             Marshal.FreeCoTaskMem(p);
 
-            p = IntPtr.Zero;
+            //p = IntPtr.Zero;
         }
 
         public static Font GetFont(int fontIndex, float fontSize = 20, FontStyle fontStyle = FontStyle.Regular)
