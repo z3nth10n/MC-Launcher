@@ -1,4 +1,4 @@
-–7
+ž6
 TD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Form1.cs
 	namespace		 	
 z3nth10n_Launcher		
@@ -26,7 +26,7 @@ TD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\For
 . 
 Combine #
 (# $
-	APIBasics$ -
+	ApiBasics$ -
 .- .
 AssemblyFolderPATH. @
 ,@ A
@@ -69,11 +69,11 @@ Form1_Load 
 _off 
 = 
 ! 
-	APIBasics "
+	ApiBasics "
 ." #
 OfflineMode# .
 ||/ 1
-	APIBasics2 ;
+	ApiBasics2 ;
 .; <
 GetSO< A
 (A B
@@ -122,7 +122,7 @@ Form1_Load 
 .--  
 Combine--  '
 (--' (
-	APIBasics--( 1
+	ApiBasics--( 1
 .--1 2
 	LocalPATH--2 ;
 ,--; <
@@ -131,7 +131,7 @@ Form1_Load 
 ;--M N
 if// 
 (// 
-	APIBasics// 
+	ApiBasics// 
 .// 
 PreviousChk// )
 (//) *
@@ -160,251 +160,245 @@ Properties00* 4
 (22E F
 )22F G
 ;22G H
-pfc55 
-.55 
-AddFontFile55 
-(55  
-f55  !
-)55! "
-;55" #
-ff77 
-=77 
-new77 
-Font77 
-(77 
-pfc77 !
-.77! "
-Families77" *
-[77* +
-$num77+ ,
-]77, -
-,77- .
-$num77/ 1
-)771 2
-;772 3
-pictureBox199 
-.99 
-Image99 !
-=99" #
-	APIBasics99$ -
-.99- .
-DrawText99. 6
-(996 7
-$str997 K
-,99K L
-ff99M O
-,99O P
-Color99Q V
-.99V W
-FromArgb99W _
-(99_ `
-$num99` c
-,99c d
-$num99e h
-,99h i
-$num99j m
-,99m n
-$num99o r
-)99r s
-,99s t
-Color99u z
-.99z {
-Transparent	99{ †
+pfc44 
+.44 
+AddFontFile44 
+(44  
+f44  !
+)44! "
+;44" #
+ff66 
+=66 
+new66 
+Font66 
+(66 
+pfc66 !
+.66! "
+Families66" *
+[66* +
+$num66+ ,
+]66, -
+,66- .
+$num66/ 1
+)661 2
+;662 3
+pictureBox188 
+.88 
+Image88 !
+=88" #
+	ApiBasics88$ -
+.88- .
+DrawText88. 6
+(886 7
+$str887 K
+,88K L
+ff88M O
+,88O P
+Color88Q V
+.88V W
+FromArgb88W _
+(88_ `
+$num88` c
+,88c d
+$num88e h
+,88h i
+$num88j m
+,88m n
+$num88o r
+)88r s
+,88s t
+Color88u z
+.88z {
+Transparent	88{ †
 )
-99† ‡
+88† ‡
 ;
-99‡ ˆ
-}:: 
-lblNotifications<< 
-.<< 
-Text<< !
-=<<" #
-CheckValidJar<<$ 1
-(<<1 2
-)<<2 3
-?<<4 5
-$str<<6 8
-:<<9 :
-$str	<<; œ
+88‡ ˆ
+}99 
+lblNotifications;; 
+.;; 
+Text;; !
+=;;" #
+CheckValidJar;;$ 1
+(;;1 2
+);;2 3
+?;;4 5
+$str;;6 8
+:;;9 :
+$str	;;; œ
 ;
-<<œ 
-}== 	
-private?? 
-void?? 
-Form1_Shown??  
-(??  !
-object??! '
-sender??( .
-,??. /
-	EventArgs??0 9
-e??: ;
-)??; <
-{@@ 	
-}AA 	
-privateCC 
-voidCC *
-comboBox1_SelectedIndexChangedCC 3
-(CC3 4
-objectCC4 :
-senderCC; A
-,CCA B
-	EventArgsCCC L
-eCCM N
-)CCN O
-{DD 	
-}EE 	
-privateII 
-staticII 
-boolII 
-CheckValidJarII )
-(II) *
-)II* +
-{JJ 	
-ifKK 
-(KK 
-!KK 
-FileKK 
-.KK 
-ExistsKK 
-(KK 
-minecraftJARKK )
-)KK) *
-)KK* +
-returnKK, 2
-falseKK3 8
-;KK8 9
-elseLL 
-ifLL 
-(LL 
-!LL 
-	APIBasicsLL 
-.LL  
-AssemblyFolderPATHLL  2
-.LL2 3
-ContainsLL3 ;
-(LL; <
-$strLL< A
-)LLA B
-||LLC E
-!LLF G
-	APIBasicsLLG P
-.LLP Q
-AssemblyFolderPATHLLQ c
-.LLc d
-ContainsLLd l
-(LLl m
-$strLLm w
-)LLw x
-)LLx y
-return	LLz €
+;;œ 
+}<< 	
+private@@ 
+static@@ 
+bool@@ 
+CheckValidJar@@ )
+(@@) *
+)@@* +
+{AA 	
+ifBB 
+(BB 
+!BB 
+FileBB 
+.BB 
+ExistsBB 
+(BB 
+minecraftJARBB )
+)BB) *
+)BB* +
+returnBB, 2
+falseBB3 8
+;BB8 9
+elseCC 
+ifCC 
+(CC 
+!CC 
+	ApiBasicsCC 
+.CC  
+AssemblyFolderPATHCC  2
+.CC2 3
+ContainsCC3 ;
+(CC; <
+$strCC< A
+)CCA B
+||CCC E
+!CCF G
+	ApiBasicsCCG P
+.CCP Q
+AssemblyFolderPATHCCQ c
+.CCc d
+ContainsCCd l
+(CCl m
+$strCCm w
+)CCw x
+)CCx y
+return	CCz €
 false
-LL †
+CC †
 ;
-LL† ‡
-returnNN 
-APILauncherNN 
-.NN 
+CC† ‡
+returnEE 
+ApiLauncherEE 
+.EE 
 
-IsValidJARNN )
-(NN) *
-minecraftJARNN* 6
-)NN6 7
-;NN7 8
-}OO 	
-privateQQ 
-DateTimeQQ 
-lastTimeQQ !
-=QQ" #
-DateTimeQQ$ ,
-.QQ, -
-NowQQ- 0
-;QQ0 1
-privateSS 
-voidSS 
-button1_ClickSS "
-(SS" #
-objectSS# )
-senderSS* 0
-,SS0 1
-	EventArgsSS2 ;
-eSS< =
-)SS= >
-{TT 	
-ifUU 
-(UU 
-(UU 
-DateTimeUU 
-.UU 
-NowUU 
--UU 
-lastTimeUU  (
-)UU( )
-.UU) *
-TotalMillisecondsUU* ;
->UU< =
-$numUU> B
-)UUB C
-{VV 
-ifWW 
-(WW 
-stringWW 
-.WW 
-IsNullOrWhiteSpaceWW -
-(WW- .
-txtUsernameWW. 9
-.WW9 :
-TextWW: >
-)WW> ?
-)WW? @
-{XX 
-lblNotificationsYY $
-.YY$ %
-TextYY% )
-=YY* +
-$strYY, O
-;YYO P
-	APIBasicsZZ 
-.ZZ 
-ShakeZZ #
-(ZZ# $
-thisZZ$ (
-)ZZ( )
-;ZZ) *
-using\\ 
-(\\ 
-Stream\\ !
-s\\" #
-=\\$ %
+IsValidJAREE )
+(EE) *
+minecraftJAREE* 6
+)EE6 7
+;EE7 8
+}FF 	
+privateHH 
+DateTimeHH 
+lastTimeHH !
+=HH" #
+DateTimeHH$ ,
+.HH, -
+NowHH- 0
+;HH0 1
+privateJJ 
+voidJJ 
+button1_ClickJJ "
+(JJ" #
+objectJJ# )
+senderJJ* 0
+,JJ0 1
+	EventArgsJJ2 ;
+eJJ< =
+)JJ= >
+{KK 	
+ifLL 
+(LL 
+(LL 
+DateTimeLL 
+.LL 
+NowLL 
+-LL 
+lastTimeLL  (
+)LL( )
+.LL) *
+TotalMillisecondsLL* ;
+>LL< =
+$numLL> B
+)LLB C
+{MM 
+ifNN 
+(NN 
+stringNN 
+.NN 
+IsNullOrWhiteSpaceNN -
+(NN- .
+txtUsernameNN. 9
+.NN9 :
+TextNN: >
+)NN> ?
+)NN? @
+{OO 
+lblNotificationsPP $
+.PP$ %
+TextPP% )
+=PP* +
+$strPP, O
+;PPO P
+	ApiBasicsQQ 
+.QQ 
+ShakeQQ #
+(QQ# $
+thisQQ$ (
+)QQ( )
+;QQ) *
+usingSS 
+(SS 
+StreamSS !
+sSS" #
+=SS$ %
 
-Properties\\& 0
-.\\0 1
-	Resources\\1 :
-.\\: ;
-sound101\\; C
-)\\C D
-(]] 
-new]] 
-SoundPlayer]] (
-(]]( )
-s]]) *
-)]]* +
-)]]+ ,
-.]], -
-Play]]- 1
-(]]1 2
-)]]2 3
-;]]3 4
-}^^ 
-lastTime`` 
-=`` 
-DateTime`` #
-.``# $
-Now``$ '
-;``' (
-}aa 
-}bb 	
-}cc 
-}dd „"
+PropertiesSS& 0
+.SS0 1
+	ResourcesSS1 :
+.SS: ;
+sound101SS; C
+)SSC D
+(TT 
+newTT 
+SoundPlayerTT (
+(TT( )
+sTT) *
+)TT* +
+)TT+ ,
+.TT, -
+PlayTT- 1
+(TT1 2
+)TT2 3
+;TT3 4
+}UU 
+lastTimeWW 
+=WW 
+DateTimeWW #
+.WW# $
+NowWW$ '
+;WW' (
+}XX 
+}YY 	
+private[[ 
+void[[ 
+Form1_FormClosing[[ &
+([[& '
+object[[' -
+sender[[. 4
+,[[4 5 
+FormClosingEventArgs[[6 J
+e[[K L
+)[[L M
+{\\ 	
+Program]] 
+.]] 
+Exit]] 
+(]] 
+)]] 
+;]] 
+}^^ 	
+}__ 
+}`` ¢!
 ZD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\MemoryFonts.cs
 	namespace 	
 z3nth10n_Launcher
@@ -570,104 +564,98 @@ ZD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Mem
 p" #
 )# $
 ;$ %
-p 
-= 
-IntPtr 
-. 
-Zero 
-; 
-}   	
-public"" 
-static"" 
-Font"" 
-GetFont"" "
-(""" #
-int""# &
-	fontIndex""' 0
-,""0 1
-float""2 7
-fontSize""8 @
-=""A B
-$num""C E
-,""E F
-	FontStyle""G P
-	fontStyle""Q Z
-=""[ \
-	FontStyle""] f
-.""f g
-Regular""g n
-)""n o
-{## 	
-return$$ 
-new$$ 
-Font$$ 
-($$ 
-pfc$$ 
-.$$  
-Families$$  (
-[$$( )
-	fontIndex$$) 2
-]$$2 3
-,$$3 4
-fontSize$$5 =
-,$$= >
-	fontStyle$$? H
-)$$H I
-;$$I J
-}%% 	
-public)) 
-static)) 
-string)) 
-UnicodeToChar)) *
-())* +
-string))+ 1
-hex))2 5
-)))5 6
-{** 	
-int++ 
-code++ 
-=++ 
-int++ 
-.++ 
-Parse++  
-(++  !
-hex++! $
-,++$ %
-System++& ,
-.++, -
-Globalization++- :
-.++: ;
-NumberStyles++; G
-.++G H
-	HexNumber++H Q
-)++Q R
-;++R S
-string,, 
-unicodeString,,  
-=,,! "
-char,,# '
-.,,' (
-ConvertFromUtf32,,( 8
-(,,8 9
-code,,9 =
-),,= >
-;,,> ?
-return-- 
-unicodeString--  
-;--  !
-}.. 	
-}// 
-}00 ¹
-
+} 	
+public   
+static   
+Font   
+GetFont   "
+(  " #
+int  # &
+	fontIndex  ' 0
+,  0 1
+float  2 7
+fontSize  8 @
+=  A B
+$num  C E
+,  E F
+	FontStyle  G P
+	fontStyle  Q Z
+=  [ \
+	FontStyle  ] f
+.  f g
+Regular  g n
+)  n o
+{!! 	
+return"" 
+new"" 
+Font"" 
+("" 
+pfc"" 
+.""  
+Families""  (
+[""( )
+	fontIndex"") 2
+]""2 3
+,""3 4
+fontSize""5 =
+,""= >
+	fontStyle""? H
+)""H I
+;""I J
+}## 	
+public'' 
+static'' 
+string'' 
+UnicodeToChar'' *
+(''* +
+string''+ 1
+hex''2 5
+)''5 6
+{(( 	
+int)) 
+code)) 
+=)) 
+int)) 
+.)) 
+Parse))  
+())  !
+hex))! $
+,))$ %
+System))& ,
+.)), -
+Globalization))- :
+.)): ;
+NumberStyles)); G
+.))G H
+	HexNumber))H Q
+)))Q R
+;))R S
+string** 
+unicodeString**  
+=**! "
+char**# '
+.**' (
+ConvertFromUtf32**( 8
+(**8 9
+code**9 =
+)**= >
+;**> ?
+return++ 
+unicodeString++  
+;++  !
+},, 	
+}-- 
+}.. £
 VD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Program.cs
 	namespace 	
 z3nth10n_Launcher
  
-{ 
-internal 
-static 
-class 
-Program !
+{ 
+public 
+
+static 
+class 
+Program 
 {		 
 private
 
@@ -722,7 +710,7 @@ VD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Pro
 new 
 Timer 
 ( 
-	APIBasics '
+	ApiBasics '
 .' (
 ChkConn( /
 ,/ 0
@@ -737,9 +725,23 @@ VD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Pro
 $numE G
 )G H
 ;H I
-} 	
-} 
-} ‘
+} 	
+public 
+static 
+void 
+Exit 
+(  
+)  !
+{ 	
+timer 
+. 
+Dispose 
+( 
+) 
+; 
+} 	
+} 
+} ‘
 fD:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\Properties\AssemblyInfo.cs
 [ 
 assembly 	

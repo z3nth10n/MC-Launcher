@@ -12,7 +12,7 @@ using System.Text;
 
 namespace LauncherAPI
 {
-    public static class APILauncher
+    public static class ApiLauncher
     {
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
@@ -45,14 +45,9 @@ namespace LauncherAPI
                                 break;
 
                             case "string":
-                                string val = (string)(object)v;
-                                if (!string.IsNullOrEmpty(val))
-                                    return v;
-                                else
-                                {
+                                if (string.IsNullOrEmpty((string)(object)v))
                                     Console.WriteLine("String null reading jar!");
-                                    return default(T);
-                                }
+                                return v;
 
                             default:
                                 Console.WriteLine("Unrecognized type: {0} (returning... nervermind)", v.GetType().Name.ToLower());
@@ -79,12 +74,7 @@ namespace LauncherAPI
             {
                 if (!item.IsDirectory && item.Name == "version.json")
                     using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                    {
-                        string contents = s.ReadToEnd();
-                        //Console.WriteLine(contents);
-
-                        return (JObject)JsonConvert.DeserializeObject(contents);
-                    }
+                        return (JObject)JsonConvert.DeserializeObject(s.ReadToEnd());
 
                 return null;
             }, (item) => true);
@@ -139,17 +129,17 @@ namespace LauncherAPI
 
         public static string CleverBackslashes(string path)
         {
-            return APIBasics.GetSO() != OS.Windows ? path : path.Replace('/', '\\');
+            return ApiBasics.GetSO() != OS.Windows ? path : path.Replace('/', '\\');
         }
 
         public static string GetLibPath()
         {
             string libpath = "";
 
-            if (APIBasics.AssemblyFolderPATH.Contains("bin"))
-                libpath = Path.Combine(APIBasics.AssemblyFolderPATH.GetUpperFolders(), "libraries");
-            else if (APIBasics.AssemblyFolderPATH.Contains("versions"))
-                libpath = Path.Combine(APIBasics.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+            if (ApiBasics.AssemblyFolderPATH.Contains("bin"))
+                libpath = Path.Combine(ApiBasics.AssemblyFolderPATH.GetUpperFolders(), "libraries");
+            else if (ApiBasics.AssemblyFolderPATH.Contains("versions"))
+                libpath = Path.Combine(ApiBasics.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
 
             return libpath;
         }
@@ -347,7 +337,7 @@ namespace LauncherAPI
             //Hacer esto cada semana, para que no se quede obsoleto el asunto, WIP ... esto tengo que implementando con lo que he dicho del latest ... si el latests es igual al local entonces devolvemos el local
 
             //Define folder of download
-            string fold = Path.Combine(APIBasics.AssemblyFolderPATH, "Versions");
+            string fold = Path.Combine(ApiBasics.AssemblyFolderPATH, "Versions");
 
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
@@ -417,7 +407,7 @@ namespace LauncherAPI
 
         public static IEnumerable<FileInfo> GetValidJars()
         {
-            DirectoryInfo dir = new DirectoryInfo(APIBasics.AssemblyFolderPATH);
+            DirectoryInfo dir = new DirectoryInfo(ApiBasics.AssemblyFolderPATH);
 
             //Select valid jars
             return dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
@@ -429,15 +419,15 @@ namespace LauncherAPI
 
             object selObj = GetSelVersion(rvers);
 
-            if (selObj.GetType() is typeof(string))
+            if (selObj.GetType().Equals(typeof(string)))
                 return (string)selObj;
 
             KeyValuePair<string, string> selVersion = (KeyValuePair<string, string>)selObj;
 
             //Then, start downloading...
 
-            string nativesDir = Path.Combine(APIBasics.AssemblyFolderPATH, "natives");
-            APIBasics.PreviousChk(nativesDir);
+            string nativesDir = Path.Combine(ApiBasics.AssemblyFolderPATH, "natives");
+            ApiBasics.PreviousChk(nativesDir);
 
             Console.WriteLine();
             DownloadNatives(nativesDir);
@@ -446,7 +436,7 @@ namespace LauncherAPI
             //Generate libraries
 
             //First we have to download the desired json...
-            string jsonPath = APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+            string jsonPath = ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
             JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
             Console.WriteLine();
@@ -454,7 +444,7 @@ namespace LauncherAPI
             //First we have to identify if we are on bin or in versions folder, to get the root
             string lPath = GetLibPath();
 
-            string forgeFile = Path.Combine(APIBasics.AssemblyFolderPATH, selVersion.Key);
+            string forgeFile = Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Key);
             DownloadForgeLibraries(forgeFile, lPath, selVersion, jObject);
 
             //Then, with the JSON we will start to download libraries...
@@ -476,7 +466,7 @@ namespace LauncherAPI
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -497,7 +487,7 @@ namespace LauncherAPI
                            libPath = Path.Combine(lPath, GetPathFromLibName(name, true));
 
                     if (!string.IsNullOrEmpty(urlRepo))
-                        APIBasics.DownloadFile(libPath, urlRepo);
+                        ApiBasics.DownloadFile(libPath, urlRepo);
                     else
                         Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
                 }
@@ -517,7 +507,7 @@ namespace LauncherAPI
                 //Download artifact...
                 try
                 {
-                    APIBasics.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                    ApiBasics.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
                 }
                 catch (Exception ex)
                 {
@@ -535,7 +525,7 @@ namespace LauncherAPI
                 foreach (var child in clssf.Children())
                 {
                     string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
-                           soid = APIBasics.GetSO().ToString().ToLower();
+                           soid = ApiBasics.GetSO().ToString().ToLower();
 
                     if (!name.Contains(soid))
                         continue;
@@ -547,7 +537,7 @@ namespace LauncherAPI
                         //Here we have every object...
                         try
                         {
-                            APIBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                            ApiBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
                         }
                         catch (Exception ex)
                         {
@@ -566,32 +556,36 @@ namespace LauncherAPI
         private static void DownloadNatives(string nativesDir)
         {
             //Generate natives
-            switch (APIBasics.GetSO())
+            switch (ApiBasics.GetSO())
             {
                 case OS.Windows:
-                    string preWindows = "https://build.lwjgl.org/release/latest/windows";
+                    string[] preWindows = new string[3] {
+                        "https://build.lwjgl.org/release/latest/windows",
+                        "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows",
+                        "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows"
+                    };
 
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows));
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows[0]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), string.Format("{0}/x64/lwjgl.dll", preWindows[0]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), string.Format("{0}/x86/OpenAL32.dll", preWindows[0]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), string.Format("{0}/x64/OpenAL.dll", preWindows[0]));
 
                     //JInput
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-dx8.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-raw.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-raw_64.dll");
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), string.Format("{0}/x86/jinput-dx8.dll", preWindows[1]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), string.Format("{0}/x86_64/jinput-dx8_64.dll", preWindows[1]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), string.Format("{0}/x86/jinput-raw.dll", preWindows[1]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), string.Format("{0}/x86_64/jinput-raw_64.dll", preWindows[1]));
 
                     //WinTab case
 
                     if (Environment.Is64BitOperatingSystem)
-                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86_64/jinput-wintab.dll");
+                        ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86_64/jinput-wintab.dll", preWindows[1]));
                     else
-                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/native/windows/x86/jinput-wintab.dll");
+                        ApiBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86/jinput-wintab.dll", preWindows[1]));
 
                     //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
-                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), string.Format("{0}/SAPIWrapper_x64.dll", preWindows[2]));
+                    ApiBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), string.Format("{0}/SAPIWrapper_x86.dll", preWindows[2]));
                     break;
 
                 case OS.Linux:
@@ -605,18 +599,19 @@ namespace LauncherAPI
 
             //Download common jars...
 
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/jinput.jar");
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/lwjgl.jar");
-            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives/lwjgl_util.jar");
+            string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
+            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
+            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
+            ApiBasics.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
         }
 
         private static object GetSelVersion(IEnumerable<string> rvers)
         {
             KeyValuePair<string, string> selVersion;
 
-            if (File.Exists(APIBasics.Base64PATH))
+            if (File.Exists(ApiBasics.Base64PATH))
             {
-                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(APIBasics.Base64PATH));
+                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(ApiBasics.Base64PATH));
 
                 if (jArr.Count == 1)
                     selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
@@ -661,12 +656,12 @@ namespace LauncherAPI
 
         public static ProcessStartInfo GenerateLaunchProccess()
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que conseguir obtener el directiorio de instalacion en cualquier caso
+            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que ver si el metodo usado funciona de verdad
 
             startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
                                             (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
                                             (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
-                                            Path.Combine(APIBasics.AssemblyFolderPATH, "natives"),
+                                            Path.Combine(ApiBasics.AssemblyFolderPATH, "natives"),
                                             GetAllLibs(),
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
                                             "username --> txtUsername.Text", "{ }");

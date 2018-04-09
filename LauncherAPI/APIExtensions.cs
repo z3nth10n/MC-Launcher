@@ -5,7 +5,7 @@ namespace LauncherAPI
 {
     public enum OS { Windows, Linux, OSx, Other }
 
-    public static class APIExtensions
+    public static class ApiExtensions
     {
         public static void ForEach<T>(
 this IEnumerable<T> source,

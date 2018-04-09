@@ -12,7 +12,7 @@ using System.Windows.Forms;
 
 namespace LauncherAPI
 {
-    public static class APIBasics
+    public static class ApiBasics
     {
         private static bool _off, chk;
 

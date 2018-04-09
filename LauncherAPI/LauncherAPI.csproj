@@ -53,9 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="APIExtensions.cs" />
-    <Compile Include="APIBasics.cs" />
-    <Compile Include="APILauncher.cs" />
+    <Compile Include="ApiExtensions.cs" />
+    <Compile Include="ApiBasics.cs" />
+    <Compile Include="ApiLauncher.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
