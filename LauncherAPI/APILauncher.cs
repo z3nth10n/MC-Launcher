@@ -1,81 +1,17 @@
 ﻿using ICSharpCode.SharpZipLib.Zip;
-using MimeTypes;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Media;
 using System.Net;
-using System.Reflection;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Windows.Forms;
 
 namespace LauncherAPI
 {
-    public enum OS { Windows, Linux, OSx, Other }
-
-    public static class API
-    { //WIP ... dividir los metodos en clases segun su uso
-        private static bool _off, chk;
-
-        public static void ForEach<T>(
-this IEnumerable<T> source,
-Action<T> action)
-        {
-            foreach (T element in source)
-                action(element);
-        }
-
-        public static void ForEachStop<T>(
-this IEnumerable<T> source,
-Func<T, bool> action)
-        {
-            foreach (T element in source)
-                if (action(element))
-                    break;
-        }
-
-        public static bool Between(this int val, int min, int max, bool exclusive = false)
-        {
-            if (!exclusive)
-                return val >= min && val <= max;
-            else
-                return val > min && val < max;
-        }
-
-        public static bool Between(this int val, long min, long max, bool exclusive = false)
-        {
-            if (!exclusive)
-                return val >= min && val <= max;
-            else
-                return val > min && val < max;
-        }
-
-        public static bool Between(this long val, long min, long max, bool exclusive = false)
-        {
-            if (!exclusive)
-                return val >= min && val <= max;
-            else
-                return val > min && val < max;
-        }
-
-        public static OS GetSO()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                return OS.Linux;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return OS.Windows;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                return OS.OSx;
-            else
-                return OS.Other;
-        }
-
+    public static class APILauncher
+    {
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             return ReadJAR<object>(path, jarAction, func);
@@ -136,248 +72,6 @@ Func<T, bool> action)
 
                 return valid;
             });
-        }
-
-        public static string Base64PATH
-        {
-            get
-            {
-                byte[] arr = Encoding.UTF8.GetBytes(Assembly.GetExecutingAssembly().Location);
-                string path = Path.Combine(LocalPATH, "Base64");
-
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                path = Path.Combine(path, Convert.ToBase64String(arr)) + ".json";
-
-                return path;
-            }
-        }
-
-        public static string LocalPATH
-        {
-            get
-            {
-                string path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "z3nth10n", "Launcher");
-
-                if (!Directory.Exists(path))
-                    Directory.CreateDirectory(path);
-
-                return path;
-            }
-        }
-
-        public static string AssemblyFolderPATH
-        {
-            get
-            {
-                return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            }
-        }
-
-        public static bool OfflineMode
-        {
-            get
-            {
-                if (!chk)
-                {
-                    _off = !CheckForInternetConnection();
-                    chk = true;
-                }
-                return _off;
-            }
-        }
-
-        public static void ChkConn(object objState)
-        {
-            if (chk) chk = false;
-        }
-
-        public static bool CheckForInternetConnection()
-        {
-            try
-            {
-                using (var client = new WebClient())
-                using (client.OpenRead("http://clients3.google.com/generate_204"))
-                    return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public static bool PreviousChk(string path)
-        {
-            bool isf = Directory.Exists(path) && IsDirectory(path);
-            string fold = isf ? path : Path.GetDirectoryName(path);
-            if (!Directory.Exists(fold))
-                Directory.CreateDirectory(fold);
-
-            if (!isf && File.Exists(path))
-                return false;
-
-            return true;
-        }
-
-        public static void UrlToLocalFile(string url, string path)
-        {
-            if (!PreviousChk(path))
-                return;
-
-            using (WebClient wc = new WebClient())
-                wc.DownloadFile(url, path);
-        }
-
-        public static string URLToLocalFile(string url)
-        {
-            string fil = "";
-
-            using (WebClient wc = new WebClient())
-            {
-                byte[] by = wc.DownloadData(url);
-                string[] arr = Directory.GetFiles(LocalPATH);
-
-                fil = Path.Combine(LocalPATH, string.Format("file{0}{1}",
-                                            arr.Length,
-                                            MimeTypeMap.GetExtension(GetContentType(url))));
-
-                if (arr.Any(x => File.ReadAllBytes(x) != by))
-                    File.WriteAllBytes(fil, by);
-            }
-
-            if (string.IsNullOrEmpty(fil))
-                throw new Exception("Coudn't retrieve file name.");
-
-            return fil;
-        }
-
-        public static string GetContentType(string url)
-        {
-            string contentType = "";
-
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            if (request != null)
-            {
-                HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-
-                if (response != null)
-                    contentType = response.ContentType;
-            }
-
-            return contentType;
-        }
-
-        public static Image DrawText(String text, Font font, Color textColor, Color backColor)
-        {
-            //first, create a dummy bitmap just to get a graphics object
-            Image img = new Bitmap(1, 1);
-            Graphics drawing = Graphics.FromImage(img);
-
-            //measure the string to see how big the image needs to be
-            SizeF textSize = drawing.MeasureString(text, font);
-
-            //free up the dummy image and old graphics object
-            img.Dispose();
-            drawing.Dispose();
-
-            //create a new image of the right size
-            img = new Bitmap((int)textSize.Width, (int)textSize.Height);
-
-            drawing = Graphics.FromImage(img);
-
-            //paint the background
-            drawing.Clear(backColor);
-
-            //create a brush for the text
-            Brush textBrush = new SolidBrush(textColor);
-
-            drawing.DrawString(text, font, textBrush, 0, 0);
-
-            drawing.Save();
-
-            textBrush.Dispose();
-            drawing.Dispose();
-
-            return img;
-        }
-
-        public static void Shake(Form form)
-        {
-            var original = form.Location;
-            var rnd = new Random();
-            const int shake_amplitude = 10;
-            for (int i = 0; i < 10; i++)
-            {
-                form.Location = new Point(original.X + rnd.Next(-shake_amplitude, shake_amplitude), original.Y + rnd.Next(-shake_amplitude, shake_amplitude));
-                System.Threading.Thread.Sleep(20);
-            }
-            form.Location = original;
-        }
-
-        public static void SoundBytes(byte[] arr)
-        {
-            using (MemoryStream ms = new MemoryStream(arr))
-            {
-                SoundPlayer simpleSound = new SoundPlayer(ms);
-                simpleSound.Play();
-            }
-        }
-
-        public static string DownloadFile(string path, string url, bool overwrite = false)
-        {
-            if (PreviousChk(path) || overwrite)
-            {
-                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
-                using (WebClient wc = new WebClient())
-                    File.WriteAllBytes(path, wc.DownloadData(url));
-            }
-            else
-                Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
-
-            return path;
-        }
-
-        public static void WriteLineStop(string val = "")
-        {
-            WriteLineStop(val, null);
-        }
-
-        public static void WriteLineStop(string val, params object[] objs)
-        {
-            Console.WriteLine(val, objs);
-            Console.Read();
-        }
-
-        public static void WriteStop(string val = "")
-        {
-            WriteStop(val, null);
-        }
-
-        public static void WriteStop(string val, params object[] objs)
-        {
-            Console.Write(val, objs);
-            Console.Read();
-        }
-
-        public static string GetUpperFolders(this string cpath, int levels = 1)
-        {
-            if (!IsDirectory(cpath)) cpath = Path.GetDirectoryName(cpath);
-
-            for (int i = 0; i < levels; ++i)
-                cpath = Path.GetDirectoryName(cpath);
-
-            return cpath;
-        }
-
-        public static bool IsDirectory(string path)
-        {
-            return File.GetAttributes(path).HasFlag(FileAttributes.Directory);
-        }
-
-        public static string CleverSubstring(this string str, int limit = 50)
-        {
-            return str.Length >= limit ? str.Substring(0, limit / 2) + "..." + str.Substring(str.Length - limit / 2 - 1) : str;
         }
 
         public static JObject GetForgeVersion(string path)
@@ -446,17 +140,17 @@ Func<T, bool> action)
 
         public static string CleverBackslashes(string path)
         {
-            return GetSO() != OS.Windows ? path : path.Replace('/', '\\');
+            return APIBasics.GetSO() != OS.Windows ? path : path.Replace('/', '\\');
         }
 
         public static string GetLibPath()
         {
             string libpath = "";
 
-            if (AssemblyFolderPATH.Contains("bin"))
-                libpath = Path.Combine(AssemblyFolderPATH.GetUpperFolders(), "libraries");
-            else if (AssemblyFolderPATH.Contains("versions"))
-                libpath = Path.Combine(AssemblyFolderPATH.GetUpperFolders(2), "libraries");
+            if (APIBasics.AssemblyFolderPATH.Contains("bin"))
+                libpath = Path.Combine(APIBasics.AssemblyFolderPATH.GetUpperFolders(), "libraries");
+            else if (APIBasics.AssemblyFolderPATH.Contains("versions"))
+                libpath = Path.Combine(APIBasics.AssemblyFolderPATH.GetUpperFolders(2), "libraries");
 
             return libpath;
         }
@@ -652,7 +346,7 @@ Func<T, bool> action)
             //Hacer esto cada semana, para que no se quede obsoleto el asunto, WIP ... esto tengo que implementando con lo que he dicho del latest ... si el latests es igual al local entonces devolvemos el local
 
             //Define folder of download
-            string fold = Path.Combine(AssemblyFolderPATH, "Versions");
+            string fold = Path.Combine(APIBasics.AssemblyFolderPATH, "Versions");
 
             if (!Directory.Exists(fold))
                 Directory.CreateDirectory(fold);
@@ -722,7 +416,7 @@ Func<T, bool> action)
 
         public static IEnumerable<FileInfo> GetValidJars()
         {
-            DirectoryInfo dir = new DirectoryInfo(AssemblyFolderPATH);
+            DirectoryInfo dir = new DirectoryInfo(APIBasics.AssemblyFolderPATH);
 
             //Select valid jars
             return dir.GetFiles().Where(file => file.Extension == ".jar" && file.Length > 1024 * 1024);
@@ -741,8 +435,8 @@ Func<T, bool> action)
 
             //Then, start downloading...
 
-            string nativesDir = Path.Combine(AssemblyFolderPATH, "natives");
-            PreviousChk(nativesDir);
+            string nativesDir = Path.Combine(APIBasics.AssemblyFolderPATH, "natives");
+            APIBasics.PreviousChk(nativesDir);
 
             Console.WriteLine();
             DownloadNatives(nativesDir);
@@ -751,7 +445,7 @@ Func<T, bool> action)
             //Generate libraries
 
             //First we have to download the desired json...
-            string jsonPath = DownloadFile(Path.Combine(AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+            string jsonPath = APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
             JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
             Console.WriteLine();
@@ -759,7 +453,7 @@ Func<T, bool> action)
             //First we have to identify if we are on bin or in versions folder, to get the root
             string lPath = GetLibPath();
 
-            string forgeFile = Path.Combine(AssemblyFolderPATH, selVersion.Key);
+            string forgeFile = Path.Combine(APIBasics.AssemblyFolderPATH, selVersion.Key);
             DownloadForgeLibraries(forgeFile, lPath, selVersion, jObject);
 
             //Then, with the JSON we will start to download libraries...
@@ -781,7 +475,7 @@ Func<T, bool> action)
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                DownloadFile(Path.Combine(AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -802,7 +496,7 @@ Func<T, bool> action)
                            libPath = Path.Combine(lPath, GetPathFromLibName(name, true));
 
                     if (!string.IsNullOrEmpty(urlRepo))
-                        DownloadFile(libPath, urlRepo);
+                        APIBasics.DownloadFile(libPath, urlRepo);
                     else
                         Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
                 }
@@ -824,7 +518,7 @@ Func<T, bool> action)
                     foreach (var child in clssf.Children())
                     {
                         string name = child.Path.Substring(child.Path.LastIndexOf('.') + 1),
-                               soid = GetSO().ToString().ToLower();
+                               soid = APIBasics.GetSO().ToString().ToLower();
 
                         if (name.Contains(soid))
                         { //With this, we ensure that we select "natives-windows" (in my case)
@@ -834,7 +528,7 @@ Func<T, bool> action)
                                 //Here we have every object...
                                 try
                                 {
-                                    DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                                    APIBasics.DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
                                 }
                                 catch (Exception ex)
                                 {
@@ -851,7 +545,7 @@ Func<T, bool> action)
                 //Download artifact...
                 try
                 {
-                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                    APIBasics.DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
                 }
                 catch (Exception ex)
                 {
@@ -868,30 +562,30 @@ Func<T, bool> action)
         private static void DownloadNatives(string nativesDir)
         {
             //Generate natives
-            switch (GetSO())
+            switch (APIBasics.GetSO())
             {
                 case OS.Windows:
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), "https://build.lwjgl.org/release/latest/windows/x86/lwjgl32.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/lwjgl.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), "https://build.lwjgl.org/release/latest/windows/x86/OpenAL32.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), "https://build.lwjgl.org/release/latest/windows/x64/OpenAL.dll");
 
                     //JInput
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-dx8.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-dx8_64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-raw.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-raw_64.dll");
 
                     //WinTab case
 
                     if (Environment.Is64BitOperatingSystem)
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
+                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86_64/jinput-wintab.dll");
                     else
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
+                        APIBasics.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/native/windows/x86/jinput-wintab.dll");
 
                     //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x64.dll");
+                    APIBasics.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), "https://github.com/ZZona-Dummies/jinput/raw/master/SAPIWrapper/windows/SAPIWrapper_x86.dll");
                     break;
 
                 case OS.Linux:
@@ -905,17 +599,18 @@ Func<T, bool> action)
 
             //Download common jars...
 
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
-            DownloadFile(Path.Combine(AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "jinput.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/jinput.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl.jar");
+            APIBasics.DownloadFile(Path.Combine(APIBasics.AssemblyFolderPATH, "lwjgl_util.jar"), "https://github.com/ZZona-Dummies/jinput/raw/master/JarNatives/lwjgl_util.jar");
         }
 
         private static object GetSelVersion(IEnumerable<string> rvers)
         {
             KeyValuePair<string, string> selVersion = default(KeyValuePair<string, string>);
-            if (File.Exists(Base64PATH))
+
+            if (File.Exists(APIBasics.Base64PATH))
             {
-                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(Base64PATH));
+                JArray jArr = JsonConvert.DeserializeObject<JArray>(File.ReadAllText(APIBasics.Base64PATH));
 
                 if (jArr.Count == 1)
                     selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
@@ -966,7 +661,7 @@ Func<T, bool> action)
             startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
                                             (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
                                             (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
-                                            Path.Combine(AssemblyFolderPATH, "natives"),
+                                            Path.Combine(APIBasics.AssemblyFolderPATH, "natives"),
                                             GetAllLibs(),
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
                                             "username --> txtUsername.Text", "{ }");

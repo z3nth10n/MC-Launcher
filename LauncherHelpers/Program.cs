@@ -1,11 +1,9 @@
 ﻿using LauncherAPI;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 
 namespace LauncherHelpers
 {
@@ -38,7 +36,7 @@ namespace LauncherHelpers
             int opt = 0;
             if (int.TryParse(c, out opt))
             {
-                string fversion = Path.Combine(API.AssemblyFolderPATH, "fversion.json");
+                string fversion = Path.Combine(APIBasics.AssemblyFolderPATH, "fversion.json");
 
                 //Prepare objects
                 //Aunque esto deberia salir del metodo 1
@@ -49,20 +47,20 @@ namespace LauncherHelpers
                 {
                     case 1:
                         Console.Clear();
-                        API.GenerateWeights(fversion);
+                        APILauncher.GenerateWeights(fversion);
                         break;
 
                     case 2:
                         if (!File.Exists(fversion))
                         {
-                            API.WriteLineStop("Please, you must generate fversion file, to do this you have to select option 1.");
+                            APIBasics.WriteLineStop("Please, you must generate fversion file, to do this you have to select option 1.");
                             App();
                             return;
                         }
 
                         //Start parsing...
                         //Select valid jars
-                        IEnumerable<FileInfo> files = API.GetValidJars();
+                        IEnumerable<FileInfo> files = APILauncher.GetValidJars();
 
                         Console.WriteLine("There are {0} valid versions: {1}", files.Count(), string.Join(", ", files.Select(x => x.Name)));
                         Console.WriteLine();
@@ -74,23 +72,23 @@ namespace LauncherHelpers
                         {
                             //Console.WriteLine("Parsing file: {0}; Ext: {1}", file.Name, file.Extension);
                             JObject deeper = null;
-                            string version = API.GetVersionFromMinecraftJar(file, rvers, jobj, out deeper);
-                            jArray.Add(deeper != null ? deeper : API.AddObject(file.Name, version));
+                            string version = APILauncher.GetVersionFromMinecraftJar(file, rvers, jobj, out deeper);
+                            jArray.Add(deeper != null ? deeper : APILauncher.AddObject(file.Name, version));
                         }
 
                         if (jArray != null)
                         {
                             retobj = jArray.ToString();
-                            File.WriteAllText(API.Base64PATH, retobj);
+                            File.WriteAllText(APIBasics.Base64PATH, retobj);
                         }
                         break;
 
                     case 3:
-                        string errorStr = API.DownloadLibraries(rvers);
+                        string errorStr = APILauncher.DownloadLibraries(rvers);
 
                         if (!string.IsNullOrEmpty(errorStr))
                         {
-                            API.WriteLineStop(errorStr);
+                            APIBasics.WriteLineStop(errorStr);
                             App();
                             return;
                         }
@@ -106,7 +104,7 @@ namespace LauncherHelpers
                         //{5} = Username
                         //{6} = { }
 
-                        Console.WriteLine(API.GenerateLaunchProccess().Arguments);
+                        Console.WriteLine(APILauncher.GenerateLaunchProccess().Arguments);
                         break;
 
                     case 5:
@@ -114,14 +112,14 @@ namespace LauncherHelpers
                         break;
 
                     default:
-                        API.WriteLineStop("Invalid option!");
+                        APIBasics.WriteLineStop("Invalid option!");
                         App();
                         return;
                 }
             }
             else
             {
-                API.WriteLineStop("Please specify a numeric value.");
+                APIBasics.WriteLineStop("Please specify a numeric value.");
                 App();
                 return;
             }

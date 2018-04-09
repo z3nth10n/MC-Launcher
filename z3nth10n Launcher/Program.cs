@@ -20,7 +20,7 @@ namespace z3nth10n_Launcher
             Application.Run(new Form1());
 
             //Chk conn
-            timer = new Timer(API.ChkConn, null, 0, 1000 * 5 * 60);
+            timer = new Timer(APIBasics.ChkConn, null, 0, 1000 * 5 * 60);
         }
     }
 }

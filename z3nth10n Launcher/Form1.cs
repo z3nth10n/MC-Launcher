@@ -14,7 +14,7 @@ namespace z3nth10n_Launcher
         {
             get
             {
-                return Path.Combine(API.AssemblyFolderPATH, "minecraft.jar");
+                return Path.Combine(APIBasics.AssemblyFolderPATH, "minecraft.jar");
             }
         }
 
@@ -27,7 +27,7 @@ namespace z3nth10n_Launcher
         {
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            bool _off = !API.OfflineMode || API.GetSO() == OS.Linux;
+            bool _off = !APIBasics.OfflineMode || APIBasics.GetSO() == OS.Linux;
             if (_off)
                 try
                 {
@@ -42,9 +42,9 @@ namespace z3nth10n_Launcher
             {
                 Font ff = null;
 
-                string f = Path.Combine(API.LocalPATH, "Minecraft.otf");
+                string f = Path.Combine(APIBasics.LocalPATH, "Minecraft.otf");
 
-                if (API.PreviousChk(f))
+                if (APIBasics.PreviousChk(f))
                     File.WriteAllBytes(f, Properties.Resources.MBold);
 
                 PrivateFontCollection pfc = new PrivateFontCollection();
@@ -54,7 +54,7 @@ namespace z3nth10n_Launcher
 
                 ff = new Font(pfc.Families[0], 30);
 
-                pictureBox1.Image = API.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                pictureBox1.Image = APIBasics.DrawText("Minecraft Launcher", ff, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
             }
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
@@ -73,9 +73,9 @@ namespace z3nth10n_Launcher
         private static bool CheckValidJar()
         {
             if (!File.Exists(minecraftJAR)) return false;
-            else if (!API.AssemblyFolderPATH.Contains("bin") || !API.AssemblyFolderPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
+            else if (!APIBasics.AssemblyFolderPATH.Contains("bin") || !APIBasics.AssemblyFolderPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
 
-            return API.IsValidJAR(minecraftJAR);
+            return APILauncher.IsValidJAR(minecraftJAR);
         }
 
         private DateTime lastTime = DateTime.Now;
@@ -87,7 +87,7 @@ namespace z3nth10n_Launcher
                 if (string.IsNullOrWhiteSpace(txtUsername.Text))
                 {
                     lblNotifications.Text = "You have to specify an username!!";
-                    API.Shake(this);
+                    APIBasics.Shake(this);
 
                     using (Stream s = Properties.Resources.sound101)
                         (new SoundPlayer(s)).Play();
