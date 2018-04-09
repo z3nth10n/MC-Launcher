@@ -7,5 +7,3 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\obj\Debug\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\MimeTypeMap.dll
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\Newtonsoft.Json.dll
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\Newtonsoft.Json.xml
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\LauncherAPI.dll.CodeAnalysisLog.xml
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherAPI\bin\Debug\LauncherAPI.dll.lastcodeanalysissucceeded
