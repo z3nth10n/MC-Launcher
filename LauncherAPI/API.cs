@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace LauncherAPI
     public enum OS { Windows, Linux, OSx, Other }
 
     public static class API
-    {
+    { //WIP ... dividir los metodos en clases segun su uso
         private static bool _off, chk;
 
         public static void ForEach<T>(
@@ -198,9 +199,7 @@ Func<T, bool> action)
             {
                 using (var client = new WebClient())
                 using (client.OpenRead("http://clients3.google.com/generate_204"))
-                {
                     return true;
-                }
             }
             catch
             {
@@ -957,6 +956,23 @@ Func<T, bool> action)
             }
 
             return selVersion;
+        }
+
+        public static ProcessStartInfo GenerateLaunchProccess()
+        {
+            Console.WriteLine("JAVA_HOME: " + Environment.GetEnvironmentVariable("JAVA_HOME"));
+            ProcessStartInfo startInfo = new ProcessStartInfo("java.exe"); //WIP ... tengo que conseguir obtener el directiorio de instalacion en cualquier caso
+
+            startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
+                                            (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
+                                            (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
+                                            Path.Combine(AssemblyFolderPATH, "natives"),
+                                            GetAllLibs(),
+                                            GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
+                                            "username --> txtUsername.Text", "{ }");
+            startInfo.RedirectStandardOutput = true;
+
+            return startInfo;
         }
     }
 }
