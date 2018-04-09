@@ -44,7 +44,7 @@ namespace LauncherAPI
                                 break;
 
                             case "string":
-                                if (!string.IsNullOrEmpty((string)(object)v))
+                                if (!((string)(object)v).Equals(null))
                                     return v;
                                 else
                                 {

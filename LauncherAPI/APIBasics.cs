@@ -264,7 +264,7 @@ namespace LauncherAPI
                 return OS.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 return OS.Windows;
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return OS.OSx;
             else
                 return OS.Other;
