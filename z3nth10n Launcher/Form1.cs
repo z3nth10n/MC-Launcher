@@ -70,7 +70,7 @@ namespace z3nth10n_Launcher
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
 
             //WIP ... el hit lo haré en 2 metodos y llamaré a otro PHP, lo digo para hacer una clase con dichos 2 metodos, y uno general para hacer una request
-            bool _off = !ApiBasics.OfflineMode || ApiBasics.GetSO() == OS.Linux; //WIP ... No deberia abusar de recursos en Windows haciendo que el propio usuario pueda generar la imagen
+            bool _off = ApiBasics.GetSO() == OS.Linux; //No compruebo si es offline mode, esto es restritivo de Linux, haya o no haya internet, si no hay internet ya se decidirá que hacer
             if (_off)
                 try
                 {
@@ -112,7 +112,7 @@ namespace z3nth10n_Launcher
         private static bool CheckValidJar()
         {
             if (!File.Exists(minecraftJAR)) return false;
-            else if (!ApiBasics.AssemblyFolderPATH.Contains("bin") || !ApiBasics.AssemblyFolderPATH.Contains("versions")) return false; //Tengo que comprobar la version de la carpeta "versions"
+            else if (!ApiBasics.AssemblyFolderPATH.Contains("bin") || !ApiBasics.AssemblyFolderPATH.Contains("versions")) return false; //WIP ... Tengo que comprobar la version de la carpeta "versions"
 
             return ApiLauncher.IsValidJAR(minecraftJAR);
         }

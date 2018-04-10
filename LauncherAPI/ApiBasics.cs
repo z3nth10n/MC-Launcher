@@ -348,5 +348,33 @@ namespace LauncherAPI
 
             return files;
         }
+
+        public static int CheckConnectivity(string[] urls, string testFile = "test.php")
+        {
+            Dictionary<int, bool> dictionary = new Dictionary<int, bool>();
+
+            for (int i = 0; i < urls.Length; ++i)
+            {
+                string url = urls[i];
+                if (!url.StartsWith("http"))
+                    url = "http://" + url;
+
+                if (!url.EndsWith("/"))
+                    url += "/";
+
+                url += testFile;
+
+                dictionary.Add(i, RemoteFileExists(url));
+            }
+
+            try
+            {
+                return dictionary.Where(x => x.Value).FirstOrDefault().Key;
+            }
+            catch
+            {
+                return -1;
+            }
+        }
     }
 }

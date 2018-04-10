@@ -125,6 +125,7 @@
   <ItemGroup>
     <Content Include="Resources\dirt.png" />
     <Content Include="Resources\favicon.png" />
+    <None Include="Resources\Url.txt" />
     <None Include="Resources\sound101.wav" />
   </ItemGroup>
   <ItemGroup>

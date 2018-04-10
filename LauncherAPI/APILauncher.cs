@@ -708,7 +708,22 @@ namespace LauncherAPI
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)
         {
             //WIP ... Obtener enlace de la pagina, segun si es localhosto o no, como ya hice en su momento
-            return string.Format("http://localhost/z3nth10n-PHP/logo.php?text={0}&font={1}&size={2}", text, font, size);
+
+            if (ApiBasics.OfflineMode)
+                return "";
+
+            string url = "https://github.com/z3nth10n/MC-Launcher/raw/master/z3nth10n%20Launcher/Resources/Url.txt",
+                   contents = "";
+
+            if (ApiBasics.RemoteFileExists(url))
+                using (WebClient wc = new WebClient())
+                    contents = wc.DownloadString(url);
+
+            string[] urls = contents.Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+            int urlVal = ApiBasics.CheckConnectivity(urls);
+
+            return string.Format("http://{3}/logo.php?text={0}&font={1}&size={2}", text, font, size,
+                                 urlVal == -1 ? "localhost/z3nth10n-PHP" : urls[urlVal]);
         }
     }
 }

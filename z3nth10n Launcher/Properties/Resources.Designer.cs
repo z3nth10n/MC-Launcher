@@ -158,5 +158,15 @@ namespace z3nth10n_Launcher.Properties {
                 return ResourceManager.GetStream("sound101", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to localhost/zenth10n-PHP
+        ///z3nth10n.dx.am.
+        /// </summary>
+        public static string Url {
+            get {
+                return ResourceManager.GetString("Url", resourceCulture);
+            }
+        }
     }
 }
