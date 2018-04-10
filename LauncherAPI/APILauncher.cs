@@ -707,8 +707,6 @@ namespace LauncherAPI
 
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)
         {
-            //WIP ... Obtener enlace de la pagina, segun si es localhosto o no, como ya hice en su momento
-
             if (ApiBasics.OfflineMode)
                 return "";
 

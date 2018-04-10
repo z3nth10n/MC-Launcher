@@ -64,7 +64,7 @@ namespace z3nth10n_Launcher
         private void Form1_Load(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(SM.Username))
-                txtUsername.Text = SM.Username;
+                txtUsername.Text = SM.Username; // WIP ... guardar varios usernames y mostrarlos en autocompletar
 
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
