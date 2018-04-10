@@ -2,11 +2,9 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Media;
 using System.Windows.Forms;
-
-//using Props = z3nth10n_Launcher.Properties.Settings;
+using DL = LauncherAPI.DownloadHelper;
 
 namespace z3nth10n_Launcher
 {
@@ -23,6 +21,69 @@ namespace z3nth10n_Launcher
         public Form1()
         {
             InitializeComponent();
+
+            DL.downloader.StateChanged += Downloader_StateChanged;
+            DL.downloader.CalculatingFileSize += Downloader_CalculatingFileSize;
+            DL.downloader.ProgressChanged += Downloader_ProgressChanged;
+            DL.downloader.FileDownloadAttempting += Downloader_FileDownloadAttempting;
+            DL.downloader.FileDownloadStarted += Downloader_FileDownloadStarted;
+            DL.downloader.Completed += Downloader_Completed;
+            DL.downloader.CancelRequested += Downloader_CancelRequested;
+            DL.downloader.DeletingFilesAfterCancel += Downloader_DeletingFilesAfterCancel;
+            DL.downloader.Canceled += Downloader_Canceled;
+        }
+
+        private void Downloader_Canceled(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_DeletingFilesAfterCancel(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_CancelRequested(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_Completed(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_FileDownloadStarted(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_FileDownloadAttempting(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_ProgressChanged(object sender, EventArgs e)
+        {
+            progressBar1.Value = (int)DL.downloader.CurrentFilePercentage();
+            lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)));
+            //lblFileProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", FileDownloader.FormatSizeBinary(downloader.CurrentFileProgress), FileDownloader.FormatSizeBinary(downloader.CurrentFileSize), downloader.CurrentFilePercentage()) + String.Format(" - {0}/s", FileDownloader.FormatSizeBinary(downloader.DownloadSpeed));
+
+            /*if (downloader.SupportsProgress)
+            {
+                pBarTotalProgress.Value = DL.downloader.TotalPercentage();
+                lblTotalProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", FileDownloader.FormatSizeBinary(downloader.TotalProgress), FileDownloader.FormatSizeBinary(downloader.TotalSize), downloader.TotalPercentage());
+            }*/
+        }
+
+        private void Downloader_CalculatingFileSize(object sender, int fileNr)
+        {
+            //throw new NotImplementedException();
+        }
+
+        private void Downloader_StateChanged(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -33,7 +94,8 @@ namespace z3nth10n_Launcher
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
 
-            bool _off = !ApiBasics.OfflineMode || ApiBasics.GetSO() == OS.Linux;
+            //WIP ... el hit lo haré en 2 metodos y llamaré a otro PHP, lo digo para hacer una clase con dichos 2 metodos, y uno general para hacer una request
+            bool _off = !ApiBasics.OfflineMode || ApiBasics.GetSO() == OS.Linux; //WIP ... No deberia abusar de recursos en Windows haciendo que el propio usuario pueda generar la imagen
             if (_off)
                 try
                 {
@@ -42,6 +104,7 @@ namespace z3nth10n_Launcher
                 }
                 catch
                 {
+                    Console.WriteLine("Coudn't generate logos!!");
                     _off = false;
                 }
 
@@ -49,15 +112,6 @@ namespace z3nth10n_Launcher
 
             if (!_off)
             {
-                //string f = Path.Combine(ApiBasics.LocalPATH, "Minecraft.otf");
-
-                /*if (ApiBasics.PreviousChk(f))
-                    File.WriteAllBytes(f, Properties.Resources.MBold);
-
-                PrivateFontCollection pfc = new PrivateFontCollection();
-
-                pfc.AddFontFile(f);*/ //Aun asi no funciona, solo en WIN
-
                 MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
 
                 Font mBold = MemoryFonts.GetFont(0, 30),
@@ -77,25 +131,33 @@ namespace z3nth10n_Launcher
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file."; //WIP ... esto siempre aparece
 
-            ApiLauncher.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
+            /*DL.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
             {
-                Invoke((MethodInvoker)delegate
+                /*Invoke((MethodInvoker)delegate
                 {
-                    //path)
                     double percentage = (double)bytesIn / totalBytes * 100d;
                     lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", Path.GetFileName(fileName.Value), (int)percentage, (bytesSec / 1024d).ToString("F2"));
                     progressBar1.Value = (int)percentage;
                 });
+
+                double percentage = (double)bytesIn / totalBytes * 100d;
+                this.SetValue(lblProgress, "Text", string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", Path.GetFileName(fileName.Value), (int)percentage, (bytesSec / 1024d).ToString("F2")));
+                this.SetValue(progressBar1, "Value", (int)percentage);
             };
 
-            ApiLauncher.dlCompleted = () =>
+            DL.dlCompleted = (index) =>
             {
-                Invoke((MethodInvoker)delegate
-                { //WIP ... necesita algunos reajustes
-                    lblProgress.Text = "Download completed!!";
-                    Console.WriteLine("Download completed!!");
-                });
-            };
+                Console.WriteLine("indexofdl: {0} (Count: {1})", index, DL.dlCount);
+
+                if (DL.isCompleted)
+                    Invoke((MethodInvoker)delegate
+                    { //WIP ... necesita algunos reajustes
+                        lblProgress.Text = "Download completed!!";
+                        Console.WriteLine("Download completed!!");
+                    });
+
+                return DL.isCompleted;
+            };*/
         }
 
         //Funcs
@@ -110,16 +172,12 @@ namespace z3nth10n_Launcher
 
         private DateTime lastTime = DateTime.Now;
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-        }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             Program.Exit();
         }
 
-        private void button1_Click_1(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
             if ((DateTime.Now - lastTime).TotalMilliseconds > 2000)
             {
@@ -136,7 +194,7 @@ namespace z3nth10n_Launcher
                     SM.Username = txtUsername.Text;
                     pnlMain.SendToBack();
                     pnlMain.Visible = false;
-                    //Controls.Remove(pnlMain);
+
                     string str = ApiLauncher.DownloadLibraries();
                     Console.WriteLine(string.IsNullOrEmpty(str) ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
                 }

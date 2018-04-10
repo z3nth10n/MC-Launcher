@@ -1,7 +1,6 @@
 ﻿using MimeTypes;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -11,7 +10,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LauncherAPI
@@ -49,11 +47,18 @@ namespace LauncherAPI
             }
         }
 
+        public static string VersionPATH
+        {
+            get
+            {
+                return Path.Combine(LocalPATH, "Versions");
+            }
+        }
+
         public static string AssemblyFolderPATH
         {
             get
             {
-                //Console.WriteLine("xxx: " + Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "natives"));
                 return Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             }
         }
@@ -67,7 +72,7 @@ namespace LauncherAPI
                 if (_IsConsole == null)
                 {
                     _IsConsole = true;
-                    try { int window_height = Console.WindowHeight; }
+                    try { Console.WriteLine(Console.WindowHeight); }
                     catch { _IsConsole = false; }
                 }
                 return _IsConsole.Value;
@@ -221,100 +226,6 @@ namespace LauncherAPI
                 SoundPlayer simpleSound = new SoundPlayer(ms);
                 simpleSound.Play();
             }
-        }
-
-        public static string DownloadFile(string path, string url, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
-        {
-            List<KeyValuePair<string, string>> arr = new List<KeyValuePair<string, string>>();
-            arr.Add(new KeyValuePair<string, string>(url, path));
-            DownloadFile(arr.AsEnumerable(), dlProgressChanged, dlCompleted, overwrite);
-            return path;
-        }
-
-        private static int indexDl = 0;
-
-        public static void DownloadFile(IEnumerable<KeyValuePair<string, string>> urlPath, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
-        {
-            Thread th = new Thread(async () =>
-            {
-                using (WebClient wc = new WebClient())
-                {
-                    AsyncCompletedEventHandler aCEH = null;
-
-                    DownloadProgressChangedEventHandler dlProgressChangedEventHadler = new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, urlPath); });
-                    AsyncCompletedEventHandler asyncCompletedEventHandler = new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted, dlProgressChangedEventHadler, aCEH); });
-
-                    aCEH = asyncCompletedEventHandler;
-
-                    if (dlProgressChanged != null) wc.DownloadProgressChanged += dlProgressChangedEventHadler;
-                    if (dlCompleted != null) wc.DownloadFileCompleted += asyncCompletedEventHandler;
-
-                    if (urlPath.Count() == 1)
-                    {
-                        string url = urlPath.ElementAt(0).Key, path = urlPath.ElementAt(0).Value;
-                        Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
-                        await wc.DownloadExtFile(path, url, overwrite);
-                    }
-                    else
-                    {
-                        foreach (var kvURLP in urlPath)
-                        {
-                            await wc.DownloadExtFile(kvURLP.Value, kvURLP.Key, overwrite);
-                            ++indexDl;
-                        }
-                    }
-                }
-            });
-
-            //Reset indexes...
-            indexDl = 0;
-            th.Start();
-        }
-
-        private async static Task DownloadExtFile(this WebClient wc, string path, string url, bool overwrite)
-        {
-            if (PreviousChk(path) || overwrite)
-                await new Task(() => wc.DownloadFileAsync(new Uri(url), path));
-            else
-                Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
-        }
-
-        private static DateTime lastUpdate;
-        private static long lastBytes = 0;
-
-        private static void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged, IEnumerable<KeyValuePair<string, string>> file)
-        {
-            if (lastBytes == 0)
-            {
-                lastUpdate = DateTime.Now;
-                lastBytes = e.BytesReceived;
-            }
-
-            DateTime now = DateTime.Now;
-            TimeSpan timeSpan = now - lastUpdate;
-            long bytesChange = e.BytesReceived - lastBytes,
-                 bytesPerSecond = 0;
-
-            try
-            {
-                bytesPerSecond = bytesChange / timeSpan.Seconds;
-            }
-            catch { }
-
-            dlProgressChanged(e.BytesReceived, e.TotalBytesToReceive, file.ElementAt(indexDl), bytesPerSecond);
-
-            lastBytes = e.BytesReceived;
-            lastUpdate = now;
-        }
-
-        private static void Wc_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e, Action dlCompleted, DownloadProgressChangedEventHandler dlProgressChangedEventHadler, AsyncCompletedEventHandler asyncCompletedEventHandler)
-        {
-            dlCompleted();
-
-            WebClient wc = ((WebClient)sender);
-
-            wc.DownloadProgressChanged -= dlProgressChangedEventHadler;
-            wc.DownloadFileCompleted -= asyncCompletedEventHandler;
         }
 
         public static void WriteLineStop(string val = "")

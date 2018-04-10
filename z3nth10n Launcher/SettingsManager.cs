@@ -4,7 +4,7 @@ namespace z3nth10n_Launcher
 {
     public static class SM
     {
-        public static Settings settings = Settings.Default;
+        private readonly static Settings settings = Settings.Default;
 
         public static string Username
         {

@@ -9,14 +9,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using DL = LauncherAPI.DownloadHelper;
 
 namespace LauncherAPI
 {
     public static class ApiLauncher
     {
-        public static Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged { get; set; }
-        public static Action dlCompleted { get; set; }
-
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
         {
             return ReadJAR<object>(path, jarAction, func);
@@ -161,10 +159,8 @@ namespace LauncherAPI
             //Hacer esto cada semana, para que no se quede obsoleto el asunto, WIP ... esto tengo que implementando con lo que he dicho del latest ... si el latests es igual al local entonces devolvemos el local
 
             //Define folder of download
-            string fold = Path.Combine(ApiBasics.AssemblyFolderPATH, "Versions");
-
-            if (!Directory.Exists(fold))
-                Directory.CreateDirectory(fold);
+            if (!Directory.Exists(ApiBasics.VersionPATH))
+                Directory.CreateDirectory(ApiBasics.VersionPATH);
 
             string json = "", json2;
             using (WebClient wc = new WebClient())
@@ -190,7 +186,7 @@ namespace LauncherAPI
 
             foreach (var j in jparse["versions"])
             {
-                string url = j["url"].ToString(), fname = Path.Combine(fold, Path.GetFileName(url));
+                string url = j["url"].ToString(), fname = Path.Combine(ApiBasics.VersionPATH, Path.GetFileName(url));
 
                 if (!File.Exists(fname))
                 {
@@ -264,7 +260,6 @@ namespace LauncherAPI
             }
 
             KeyValuePair<string, string> selVersion = (KeyValuePair<string, string>)selObj;
-            //Console.WriteLine("{Key: '{0}'; Value: '{1}'}", selVersion.Key, selVersion.Value);
 
             //Then, start downloading...
 
@@ -278,7 +273,7 @@ namespace LauncherAPI
             //Generate libraries
 
             //First we have to download the desired json...
-            string jsonPath = DownloadSyncFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
+            string jsonPath = DL.DownloadSyncFile(Path.Combine(ApiBasics.AssemblyFolderPATH, Path.GetFileNameWithoutExtension(selVersion.Key) + ".json"), string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.json", selVersion.Value));
             JObject jObject = JObject.Parse(File.ReadAllText(jsonPath));
 
             Console.WriteLine();
@@ -300,7 +295,7 @@ namespace LauncherAPI
             else
                 return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
 
-            DownloadArr(false);
+            DL.downloader.Start();
 
             return "";
         }
@@ -310,7 +305,7 @@ namespace LauncherAPI
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -331,7 +326,7 @@ namespace LauncherAPI
                            libPath = Path.Combine(lPath, GetPathFromLibName(name, true));
 
                     if (!string.IsNullOrEmpty(urlRepo))
-                        DownloadFile(libPath, urlRepo);
+                        DL.DownloadFile(libPath, urlRepo);
                     else
                         Console.WriteLine("Lib ({0}) hasn't valid url repo!! (Path: {1})", name, libPath); //Este salta solo para descargar el forge cosa que no hace falta porque ya está descargado asi que wala... A no ser que sea el instalador
                 }
@@ -348,23 +343,16 @@ namespace LauncherAPI
                        clssf = dl["classifiers"],
                        artf = dl["artifact"];
 
-                //Download artifact...
-                try
-                {
-                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().CleverBackslashes()), artf["url"].ToString());
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("Couldn't download artifact!! (DL-Path: {0})", dl.Path);
-                    Console.WriteLine(ex);
-                    Console.WriteLine();
-                }
+                //Add artifacts to download...
+                if (artf != null)
+                    DL.DownloadFile(Path.Combine(lPath, artf["path"].ToString().CleverBackslashes()), artf["url"].ToString());
+                else
+                    Console.WriteLine("Artifact null!!", dl.ToString());
 
                 if (clssf == null)
                 {
-                    Console.WriteLine("Classifiers are null!");
-                    return;
+                    Console.WriteLine("Classifier null!!");
+                    continue;
                 }
 
                 foreach (var child in clssf.Children())
@@ -376,21 +364,11 @@ namespace LauncherAPI
                         continue;
 
                     //With this, we ensure that we select "natives-windows" (in my case)
-                    var nats = child.OfType<JObject>();
-                    foreach (var tok in nats)
+                    IEnumerable<JObject> nats = child.OfType<JObject>();
+                    foreach (JObject tok in nats)
                     {
                         //Here we have every object...
-                        try
-                        {
-                            DownloadFile(Path.Combine(lPath, tok["path"].ToString().CleverBackslashes()), tok["url"].ToString());
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine();
-                            Console.WriteLine("Couldn't download classifier!! (DL-Path: {0})", dl.Path);
-                            Console.WriteLine(ex);
-                            Console.WriteLine();
-                        }
+                        DL.DownloadFile(Path.Combine(lPath, tok["path"].ToString().CleverBackslashes()), tok["url"].ToString());
                     }
                 }
             }
@@ -410,27 +388,27 @@ namespace LauncherAPI
                         "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/SAPIWrapper/windows"
                     };
 
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows[0]));
-                    DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), string.Format("{0}/x64/lwjgl.dll", preWindows[0]));
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), string.Format("{0}/x86/OpenAL32.dll", preWindows[0]));
-                    DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), string.Format("{0}/x64/OpenAL.dll", preWindows[0]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "lwjgl.dll"), string.Format("{0}/x86/lwjgl32.dll", preWindows[0]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "lwjgl64.dll"), string.Format("{0}/x64/lwjgl.dll", preWindows[0]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "OpenAL32.dll"), string.Format("{0}/x86/OpenAL32.dll", preWindows[0]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "OpenAL64.dll"), string.Format("{0}/x64/OpenAL.dll", preWindows[0]));
 
                     //JInput
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), string.Format("{0}/x86/jinput-dx8.dll", preWindows[1]));
-                    DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), string.Format("{0}/x86_64/jinput-dx8_64.dll", preWindows[1]));
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), string.Format("{0}/x86/jinput-raw.dll", preWindows[1]));
-                    DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), string.Format("{0}/x86_64/jinput-raw_64.dll", preWindows[1]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "jinput-dx8.dll"), string.Format("{0}/x86/jinput-dx8.dll", preWindows[1]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "jinput-dx8_64.dll"), string.Format("{0}/x86_64/jinput-dx8_64.dll", preWindows[1]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "jinput-raw.dll"), string.Format("{0}/x86/jinput-raw.dll", preWindows[1]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "jinput-raw_64.dll"), string.Format("{0}/x86_64/jinput-raw_64.dll", preWindows[1]));
 
                     //WinTab case
 
                     if (Environment.Is64BitOperatingSystem)
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86_64/jinput-wintab.dll", preWindows[1]));
+                        DL.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86_64/jinput-wintab.dll", preWindows[1]));
                     else
-                        DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86/jinput-wintab.dll", preWindows[1]));
+                        DL.DownloadFile(Path.Combine(nativesDir, "jinput-wintab.dll"), string.Format("{0}/x86/jinput-wintab.dll", preWindows[1]));
 
                     //SAPIWrapper only if version is 1.12.2 or newer... (By the moment only Windows)
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), string.Format("{0}/SAPIWrapper_x64.dll", preWindows[2]));
-                    DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), string.Format("{0}/SAPIWrapper_x86.dll", preWindows[2]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x64.dll"), string.Format("{0}/SAPIWrapper_x64.dll", preWindows[2]));
+                    DL.DownloadFile(Path.Combine(nativesDir, "SAPIWrapper_x86.dll"), string.Format("{0}/SAPIWrapper_x86.dll", preWindows[2]));
                     break;
 
                 case OS.Linux:
@@ -445,9 +423,9 @@ namespace LauncherAPI
             //Download common jars...
 
             string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
-            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
-            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
-            DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
+            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
+            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
         }
 
         public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj)
@@ -459,7 +437,6 @@ namespace LauncherAPI
         public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj, out JArray jArrOutput)
         {
             IEnumerable<FileInfo> files = GetValidJars();
-            //Console.WriteLine("Count: {0}", files.Count());
 
             Console.WriteLine();
 
@@ -486,8 +463,6 @@ namespace LauncherAPI
             bool exists = File.Exists(ApiBasics.Base64PATH),
                  isConsole = ApiBasics.IsConsole;
 
-            //Console.WriteLine(exists || !isConsole);
-
             if (exists || !isConsole)
             {
                 JArray jArr = isConsole ? JsonConvert.DeserializeObject<JArray>(File.ReadAllText(ApiBasics.Base64PATH)) : null;
@@ -497,7 +472,6 @@ namespace LauncherAPI
                     selVersion = new KeyValuePair<string, string>(jArr[0]["filename"].ToString(), jArr[0]["version"].ToString());
                 else
                 {
-                    //Console.WriteLine(jArr.ToString());
                     Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
 
                     if (isConsole)
@@ -547,8 +521,6 @@ namespace LauncherAPI
 
             string version = "",
                    woutext = file.Name.Replace(file.Extension, "");
-
-            //Console.WriteLine("Count: {0}; Woutext: {1}", rvers.Count(), woutext);
 
             if (rvers.Contains(woutext))
             {
@@ -722,42 +694,6 @@ namespace LauncherAPI
             }
 
             return null;
-        }
-
-        private static List<KeyValuePair<string, string>> dlArr = new List<KeyValuePair<string, string>>();
-
-        public static void DownloadFile(string path, string url)
-        {
-            dlArr.Add(new KeyValuePair<string, string>(url, path));
-        }
-
-        public static void DownloadArr(bool overwrite)
-        {
-            ApiBasics.DownloadFile(dlArr.AsEnumerable(), dlProgressChanged, dlCompleted, overwrite);
-            foreach (var dl in dlArr)
-                dlArr.Remove(dl);
-        }
-
-        public static string DownloadSyncFile(string path, string url, bool overwrite = false)
-        {
-            if (ApiBasics.PreviousChk(path) || overwrite)
-            {
-                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
-                try
-                {
-                    using (WebClient wc = new WebClient())
-                        wc.DownloadFile(new Uri(url), path);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("There was a problem downloading {0}...", url);
-                    Console.WriteLine(ex);
-                }
-            }
-            else
-                Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
-
-            return path;
         }
 
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)
