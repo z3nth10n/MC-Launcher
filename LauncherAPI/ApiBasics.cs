@@ -55,6 +55,14 @@ namespace LauncherAPI
             }
         }
 
+        public static string VerRevPATH
+        {
+            get
+            {
+                return Path.Combine(VersionPATH, "versionRevision.json");
+            }
+        }
+
         public static string AssemblyFolderPATH
         {
             get

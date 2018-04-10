@@ -147,16 +147,15 @@ namespace LauncherAPI
         {
             JObject deeper = null;
 
-            JObject jobj = JObject.Parse(GenerateWeights());
+            JObject jobj = JObject.Parse(GenerateWeights(ApiBasics.VerRevPATH));
             IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
 
             return GetVersionFromMinecraftJar(new FileInfo(path), rvers, jobj, out deeper);
         }
 
-        public static string GenerateWeights(string fverPath = "")
+        public static string GenerateWeights(string fverPath)
         {
             //Get estimated version from weight from jsons
-            //Hacer esto cada semana, para que no se quede obsoleto el asunto, WIP ... esto tengo que implementando con lo que he dicho del latest ... si el latests es igual al local entonces devolvemos el local
 
             //Define folder of download
             if (!Directory.Exists(ApiBasics.VersionPATH))
@@ -179,7 +178,17 @@ namespace LauncherAPI
 
             JObject jparse = JObject.Parse(json);
 
-            JArray arr2 = new JArray(), arr3 = new JArray();
+            //if (!string.IsNullOrEmpty(fverPath)) //Esta condicion no deberia ni estar
+            if (File.Exists(fverPath))
+            {
+                JObject fverObj = JObject.Parse(File.ReadAllText(fverPath));
+                if (fverObj["latest"]["snapshot"].ToString() == jparse["latest"]["snapshot"].ToString() &&
+                    fverObj["latest"]["release"].ToString() == jparse["latest"]["release"].ToString())
+                    return fverObj.ToString();
+            }
+
+            JArray arr2 = new JArray(),
+                   arr3 = new JArray();
 
             //Para saber si debemos regenerar este archivo deberemos comprobar el ultimo archivo generado (su latest) con el de este...
             //Simplemente lo que se debe de hacer es que en el OnLoad del Launcher dumpear el archivo incustrado en los recursos y ya comprobamos lo que estamos hablando
@@ -222,8 +231,8 @@ namespace LauncherAPI
 
             string ret = new JObject(new JProperty("creationTime", DateTime.Now), new JProperty("latest", jparse["latest"]), new JProperty("versions", arr2), new JProperty("recognizedVersions", arr3)).ToString();
 
-            if (!string.IsNullOrEmpty(fverPath))
-                File.WriteAllText(fverPath, ret);
+            //if (!string.IsNullOrEmpty(fverPath))
+            File.WriteAllText(fverPath, ret);
 
             Console.WriteLine("File generated succesfully!!");
 
@@ -240,7 +249,7 @@ namespace LauncherAPI
 
         public static string DownloadLibraries()
         {
-            JObject jobj = JObject.Parse(GenerateWeights());
+            JObject jobj = JObject.Parse(GenerateWeights(ApiBasics.VerRevPATH));
             IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
 
             return DownloadLibraries(rvers, jobj);
@@ -507,7 +516,7 @@ namespace LauncherAPI
                 string version = Console.ReadLine();
 
                 if (rvers.Contains(version))
-                    selVersion = new KeyValuePair<string, string>(version, version); //WIP ... Esto no deberia ser asi
+                    selVersion = new KeyValuePair<string, string>(version, version); //Aqui habia un WIP no se ni por qué
                 else
                     return "Unrecognized versions, please restart...";
             }

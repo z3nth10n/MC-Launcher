@@ -1,7 +1,9 @@
 ﻿using LauncherAPI;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 using DL = LauncherAPI.DownloadHelper;
@@ -15,8 +17,9 @@ namespace z3nth10n_Launcher
         private static string minecraftJAR
         {
             get
-            { //minecraft.jar or any version ... WIP
-                return Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar");
+            {
+                IEnumerable<FileInfo> obj = ApiLauncher.GetValidJars();
+                return obj == null ? Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar") : obj.ElementAt(0).FullName;
             }
         }
 
@@ -34,6 +37,8 @@ namespace z3nth10n_Launcher
 
             DL.downloader.ProgressChanged += Downloader_ProgressChanged;
             DL.downloader.Completed += Downloader_Completed;
+
+            Console.WriteLine("Java Path: " + Path.Combine(ApiLauncher.GetJavaInstallationPath(), "bin\\Java.exe"));
         }
 
         private void Downloader_Completed(object sender, EventArgs e)
@@ -41,7 +46,7 @@ namespace z3nth10n_Launcher
             lblProgress.Text = "Download completed!!";
             if (completedRevision)
             {
-                //Execute here Minecraft... WIP
+                //Execute here Minecraft... WIP (resolution and position)
             }
         }
 
@@ -99,7 +104,7 @@ namespace z3nth10n_Launcher
             else
                 lblProgress.Font = arial;
 
-            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file."; //WIP ... esto siempre aparece
+            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
         }
 
         //Funcs
@@ -139,7 +144,7 @@ namespace z3nth10n_Launcher
 
                     string str = ApiLauncher.DownloadLibraries();
                     completedRevision = string.IsNullOrEmpty(str);
-                    Console.WriteLine(completedRevision ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
+                    Console.WriteLine(completedRevision ? "Update completed succesfully! Now we have to run Minecraft..." : str);
                 }
 
                 lastTime = DateTime.Now;
