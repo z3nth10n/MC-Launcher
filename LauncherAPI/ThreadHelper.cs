@@ -4,7 +4,11 @@ namespace LauncherAPI
 {
     public static class ThreadHelper
     {
+#if MONO
+        private delegate void SetTextCallback<T>(Form f, T ctrl, string property, object obj) where T : Control;
+#else
         private delegate void SetTextCallback<T>(Form f, in T ctrl, string property, object obj) where T : Control;
+#endif
 
         /// <summary>
         /// Set text property of various controls
@@ -12,7 +16,11 @@ namespace LauncherAPI
         /// <param name="form">The calling form</param>
         /// <param name="ctrl"></param>
         /// <param name="text"></param>
+#if MONO
+        public static void SetValue<T>(this Form form, T ctrl, string property, object obj) where T : Control
+#else
         public static void SetValue<T>(this Form form, in T ctrl, string property, object obj) where T : Control
+#endif
         {
             // InvokeRequired required compares the thread ID of the
             // calling thread to the thread ID of the creating thread.

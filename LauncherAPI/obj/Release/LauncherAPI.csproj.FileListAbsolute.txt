@@ -1,0 +1,1 @@
+/home/usuario/MC-Launcher/LauncherAPI/obj/Release/LauncherAPI.csproj.CoreCompileInputs.cache
