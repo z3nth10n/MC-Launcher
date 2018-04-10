@@ -72,7 +72,7 @@ namespace LauncherAPI
             FileDownloadSucceeded,
 
             ProgressChanged
-        };
+        }
 
         /// <summary>Holder for the action that needs to be invoked</summary>
         private enum InvokeType
@@ -80,7 +80,7 @@ namespace LauncherAPI
             EventRaiser,
             FileDownloadFailedRaiser,
             CalculatingFileNrRaiser
-        };
+        }
 
         #endregion Nested Types
 
@@ -370,7 +370,8 @@ namespace LauncherAPI
                     m_totalSize += webResp.ContentLength;
                     webResp.Close();
                 }
-                catch (Exception) { }
+                catch (Exception)
+                { }
             }
             fireEventFromBgw(Event.FileSizesCalculationComplete);
         }
@@ -406,7 +407,8 @@ namespace LauncherAPI
 
                 size = webResp.ContentLength;
             }
-            catch (Exception ex) { exc = ex; }
+            catch (Exception ex)
+            { exc = ex; }
 
             m_currentFileSize = size;
             fireEventFromBgw(Event.FileDownloadStarted);
@@ -474,7 +476,9 @@ namespace LauncherAPI
                 Completed?.Invoke(this, new EventArgs());
             }
 
-            Stopped?.Invoke(this, new EventArgs()); IsBusyChanged?.Invoke(this, new EventArgs()); StateChanged?.Invoke(this, new EventArgs());
+            Stopped?.Invoke(this, new EventArgs());
+            IsBusyChanged?.Invoke(this, new EventArgs());
+            StateChanged?.Invoke(this, new EventArgs());
         }
 
         private void bgwDownloader_ProgressChanged(object sender, ProgressChangedEventArgs e)
@@ -485,36 +489,46 @@ namespace LauncherAPI
                     switch ((Event)e.UserState)
                     {
                         case Event.CalculationFileSizesStarted:
-                            CalculationFileSizesStarted?.Invoke(this, new EventArgs()); break;
+                            CalculationFileSizesStarted?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.FileSizesCalculationComplete:
-                            FileSizesCalculationComplete?.Invoke(this, new EventArgs()); break;
+                            FileSizesCalculationComplete?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.DeletingFilesAfterCancel:
-                            DeletingFilesAfterCancel?.Invoke(this, new EventArgs()); break;
+                            DeletingFilesAfterCancel?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.FileDownloadAttempting:
-                            FileDownloadAttempting?.Invoke(this, new EventArgs()); break;
+                            FileDownloadAttempting?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.FileDownloadStarted:
-                            FileDownloadStarted?.Invoke(this, new EventArgs()); break;
+                            FileDownloadStarted?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.FileDownloadStopped:
-                            FileDownloadStopped?.Invoke(this, new EventArgs()); break;
+                            FileDownloadStopped?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.FileDownloadSucceeded:
-                            FileDownloadSucceeded?.Invoke(this, new EventArgs()); break;
+                            FileDownloadSucceeded?.Invoke(this, new EventArgs());
+                            break;
 
                         case Event.ProgressChanged:
-                            ProgressChanged?.Invoke(this, new EventArgs()); break;
+                            ProgressChanged?.Invoke(this, new EventArgs());
+                            break;
                     }
                     break;
 
                 case InvokeType.FileDownloadFailedRaiser:
-                    FileDownloadFailed?.Invoke(this, (Exception)e.UserState); break;
+                    FileDownloadFailed?.Invoke(this, (Exception)e.UserState);
+                    break;
 
                 case InvokeType.CalculatingFileNrRaiser:
-                    CalculatingFileSize?.Invoke(this, (Int32)e.UserState); break;
+                    CalculatingFileSize?.Invoke(this, (Int32)e.UserState);
+                    break;
             }
         }
 
@@ -622,13 +636,16 @@ namespace LauncherAPI
                         m_totalProgress = 0;
                         bgwDownloader.RunWorkerAsync();
 
-                        Started?.Invoke(this, new EventArgs()); IsBusyChanged?.Invoke(this, new EventArgs()); StateChanged?.Invoke(this, new EventArgs());
+                        Started?.Invoke(this, new EventArgs());
+                        IsBusyChanged?.Invoke(this, new EventArgs());
+                        StateChanged?.Invoke(this, new EventArgs());
                     }
                     else
                     {
                         m_paused = false;
                         bgwDownloader.CancelAsync();
-                        CancelRequested?.Invoke(this, new EventArgs()); StateChanged?.Invoke(this, new EventArgs());
+                        CancelRequested?.Invoke(this, new EventArgs());
+                        StateChanged?.Invoke(this, new EventArgs());
                     }
                 }
             }
