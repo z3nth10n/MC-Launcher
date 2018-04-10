@@ -8,6 +8,7 @@ namespace z3nth10n_Launcher
     public static class Program
     {
         private static Timer timer;
+        private const bool enableVisualStyles = false;
 
         /// <summary>
         /// The main entry point for the application.
@@ -15,7 +16,7 @@ namespace z3nth10n_Launcher
         [STAThread]
         private static void Main()
         {
-            Application.EnableVisualStyles();
+            if (enableVisualStyles) Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new Form1());
 

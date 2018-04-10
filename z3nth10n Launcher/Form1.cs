@@ -10,10 +10,12 @@ namespace z3nth10n_Launcher
 {
     public partial class Form1 : Form
     {
+        private static bool completedRevision = false;
+
         private static string minecraftJAR
         {
             get
-            { //minecraft.jar or any version
+            { //minecraft.jar or any version ... WIP
                 return Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar");
             }
         }
@@ -50,7 +52,11 @@ namespace z3nth10n_Launcher
 
         private void Downloader_Completed(object sender, EventArgs e)
         {
-            //throw new NotImplementedException();
+            lblProgress.Text = "Download completed!!";
+            if (completedRevision)
+            {
+                //Execute here Minecraft... WIP
+            }
         }
 
         private void Downloader_FileDownloadStarted(object sender, EventArgs e)
@@ -65,15 +71,13 @@ namespace z3nth10n_Launcher
 
         private void Downloader_ProgressChanged(object sender, EventArgs e)
         {
-            progressBar1.Value = (int)DL.downloader.CurrentFilePercentage();
-            lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)));
-            //lblFileProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", FileDownloader.FormatSizeBinary(downloader.CurrentFileProgress), FileDownloader.FormatSizeBinary(downloader.CurrentFileSize), downloader.CurrentFilePercentage()) + String.Format(" - {0}/s", FileDownloader.FormatSizeBinary(downloader.DownloadSpeed));
-
-            /*if (downloader.SupportsProgress)
+            try
             {
-                pBarTotalProgress.Value = DL.downloader.TotalPercentage();
-                lblTotalProgress.Content = String.Format("Downloaded {0} of {1} ({2}%)", FileDownloader.FormatSizeBinary(downloader.TotalProgress), FileDownloader.FormatSizeBinary(downloader.TotalSize), downloader.TotalPercentage());
-            }*/
+                progressBar1.Value = Convert.ToInt32(DL.downloader.CurrentFilePercentage());
+                lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)));
+            }
+            catch
+            { }
         }
 
         private void Downloader_CalculatingFileSize(object sender, int fileNr)
@@ -130,34 +134,6 @@ namespace z3nth10n_Launcher
                 lblProgress.Font = arial;
 
             lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file."; //WIP ... esto siempre aparece
-
-            /*DL.dlProgressChanged = (bytesIn, totalBytes, fileName, bytesSec) =>
-            {
-                /*Invoke((MethodInvoker)delegate
-                {
-                    double percentage = (double)bytesIn / totalBytes * 100d;
-                    lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", Path.GetFileName(fileName.Value), (int)percentage, (bytesSec / 1024d).ToString("F2"));
-                    progressBar1.Value = (int)percentage;
-                });
-
-                double percentage = (double)bytesIn / totalBytes * 100d;
-                this.SetValue(lblProgress, "Text", string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", Path.GetFileName(fileName.Value), (int)percentage, (bytesSec / 1024d).ToString("F2")));
-                this.SetValue(progressBar1, "Value", (int)percentage);
-            };
-
-            DL.dlCompleted = (index) =>
-            {
-                Console.WriteLine("indexofdl: {0} (Count: {1})", index, DL.dlCount);
-
-                if (DL.isCompleted)
-                    Invoke((MethodInvoker)delegate
-                    { //WIP ... necesita algunos reajustes
-                        lblProgress.Text = "Download completed!!";
-                        Console.WriteLine("Download completed!!");
-                    });
-
-                return DL.isCompleted;
-            };*/
         }
 
         //Funcs
@@ -196,7 +172,8 @@ namespace z3nth10n_Launcher
                     pnlMain.Visible = false;
 
                     string str = ApiLauncher.DownloadLibraries();
-                    Console.WriteLine(string.IsNullOrEmpty(str) ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
+                    completedRevision = string.IsNullOrEmpty(str);
+                    Console.WriteLine(completedRevision ? "Update completed succesfully! Now we have to run Minecraft at desired position and resolution... (WIP)" : str);
                 }
 
                 lastTime = DateTime.Now;
