@@ -14,7 +14,7 @@ namespace LauncherAPI
 {
     public static class ApiLauncher
     {
-        public static Action<long, long, string, long> dlProgressChanged { get; set; }
+        public static Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged { get; set; }
         public static Action dlCompleted { get; set; }
 
         public static object ReadJAR(string path, Func<ZipFile, ZipEntry, bool, object> jarAction, Func<ZipEntry, bool> func = null)
@@ -89,9 +89,9 @@ namespace LauncherAPI
                    mavenUrl = string.Format("http://central.maven.org/maven2/{0}", namePath),
                    githubUrl = string.Format("https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/libraries/{0}", namePath);
 
-            if (RemoteFileExists(mavenUrl))
+            if (ApiBasics.RemoteFileExists(mavenUrl))
                 return mavenUrl;
-            else if (RemoteFileExists(githubUrl))
+            else if (ApiBasics.RemoteFileExists(githubUrl))
                 return githubUrl;
 
             return "";
@@ -105,34 +105,7 @@ namespace LauncherAPI
             relurl = relurl.Replace(':', '/');
 
             string ret = string.Format("{0}/{1}", relurl, file);
-            return clever ? CleverBackslashes(ret) : ret;
-        }
-
-        public static bool RemoteFileExists(string url)
-        {
-            try
-            {
-                //Creating the HttpWebRequest
-                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-                //Setting the Request method HEAD, you can also use GET too.
-                request.Method = "HEAD";
-                //Getting the Web Response.
-                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
-                {
-                    //Returns TRUE if the Status code == 200
-                    return (response.StatusCode == HttpStatusCode.OK);
-                }
-            }
-            catch
-            {
-                //Any exception will returns false.
-                return false;
-            }
-        }
-
-        public static string CleverBackslashes(string path)
-        {
-            return ApiBasics.GetSO() != OS.Windows ? path : path.Replace('/', '\\');
+            return clever ? ApiBasics.CleverBackslashes(ret) : ret;
         }
 
         public static string GetLibPath()
@@ -147,16 +120,11 @@ namespace LauncherAPI
             return libpath;
         }
 
-        public static ulong GetTotalMemoryInBytes()
-        {
-            return new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
-        }
-
         public static string GetAllLibs(bool outputDebug = false)
         {
             string libFolder = GetLibPath();
             StringBuilder ret = new StringBuilder();
-            IEnumerable<string> files = DirSearch(libFolder).AsEnumerable();
+            IEnumerable<string> files = ApiBasics.DirSearch(libFolder).AsEnumerable();
 
             foreach (string file in files)
             {
@@ -177,27 +145,6 @@ namespace LauncherAPI
             }
         }
 
-        public static List<string> DirSearch(string sDir)
-        {
-            List<string> files = new List<string>();
-
-            try
-            {
-                foreach (string d in Directory.GetDirectories(sDir))
-                {
-                    foreach (string f in Directory.GetFiles(d))
-                        files.Add(f);
-                    files.AddRange(DirSearch(d));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
-
-            return files;
-        }
-
         public static string GetVersionFromMinecraftJar(string path)
         {
             JObject deeper = null;
@@ -206,134 +153,6 @@ namespace LauncherAPI
             IEnumerable<string> rvers = jobj["recognizedVersions"].Cast<JValue>().Select(x => x.ToString());
 
             return GetVersionFromMinecraftJar(new FileInfo(path), rvers, jobj, out deeper);
-        }
-
-        public static string GetVersionFromMinecraftJar(FileInfo file, IEnumerable<string> rvers, JObject jobj, out JObject deeper, int dkb = 1)
-        {
-            Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
-
-            string version = "",
-                   woutext = file.Name.Replace(file.Extension, "");
-
-            //Console.WriteLine("Count: {0}; Woutext: {1}", rvers.Count(), woutext);
-
-            if (rvers.Contains(woutext))
-            {
-                Console.WriteLine("Found recognized version: {0}", woutext);
-
-                deeper = null;
-                return woutext;
-            }
-
-            try
-            {
-                if (IsValidJAR(file.FullName))
-                {
-                    Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
-                    Console.WriteLine();
-                    //DKB is Estimated balanced weight
-                    weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
-
-                    if (weights.Count == 1)
-                    {
-                        Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
-
-                        deeper = null;
-                        return weights.ElementAt(0).Key;
-                    }
-                    else if (weights.Count > 1)
-                    {
-                        Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
-                        weights.ForEach((x) =>
-                        {
-                            Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
-
-                            //We have to discard, because we want only one result from DeeperSearch...
-                            //If filename is not empty that means we want to dump into a file
-                        });
-
-                        Console.WriteLine();
-                        Console.WriteLine("Searching for a maching version...");
-                        Console.WriteLine();
-
-                        deeper = DeeperSearch(file, weights.Keys.AsEnumerable(), out version, true);
-                        return version;
-                    }
-                    else
-                    {
-                        Console.WriteLine("Your Minecraft JAR has changed a lot to be recognized as any established version, by this reason, we will make a deeper search... (Weight: {0})", file.Length);
-                        Console.WriteLine();
-                        //Raro que el minecraft-.jar esté aqui
-
-                        deeper = DeeperSearch(file, rvers, out version, true);
-                        return version;
-                    }
-                }
-                else
-                {
-                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
-                    Console.WriteLine();
-
-                    version = GetForgeVersion(file.FullName)["jar"].ToString();
-
-                    MsgValidKey(version);
-
-                    deeper = AddObject(file.Name, version);
-                    return version;
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Not real JAR file!!");
-                Console.WriteLine(ex);
-            }
-
-            deeper = null;
-            return version;
-        }
-
-        public static JObject DeeperSearch(FileInfo file, IEnumerable<string> col, out string validKey, bool dump = false)
-        {
-            validKey = (string)ReadJAR(file.FullName, (zipfile, item, valid) =>
-            {
-                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
-                {
-                    // stream with the file
-                    string contents = s.ReadToEnd();
-
-                    foreach (string x in col)
-                        if (item.Name.Contains(".class") && contents.Contains(x))
-                        {
-                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
-                            Console.WriteLine();
-                            return x;
-                        }
-                }
-
-                return false;
-            });
-
-            MsgValidKey(validKey, col);
-
-            if (dump)
-                return AddObject(file.Name, validKey);
-            else
-                return default(JObject);
-        }
-
-        public static JObject AddObject(string filename, string version)
-        {
-            return new JObject(new JProperty("filename", filename), new JProperty("version", version));
-        }
-
-        private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
-        {
-            if (!string.IsNullOrEmpty(validKey))
-                Console.WriteLine("Found valid version: {0}", validKey);
-            else
-                Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
-
-            Console.WriteLine();
         }
 
         public static string GenerateWeights(string fverPath = "")
@@ -481,6 +300,8 @@ namespace LauncherAPI
             else
                 return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
 
+            DownloadArr(false);
+
             return "";
         }
 
@@ -530,7 +351,7 @@ namespace LauncherAPI
                 //Download artifact...
                 try
                 {
-                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().Replace('/', '\\')), artf["url"].ToString());
+                    DownloadFile(Path.Combine(lPath, artf["path"].ToString().CleverBackslashes()), artf["url"].ToString());
                 }
                 catch (Exception ex)
                 {
@@ -561,7 +382,7 @@ namespace LauncherAPI
                         //Here we have every object...
                         try
                         {
-                            DownloadFile(Path.Combine(lPath, CleverBackslashes(tok["path"].ToString())), tok["url"].ToString());
+                            DownloadFile(Path.Combine(lPath, tok["path"].ToString().CleverBackslashes()), tok["url"].ToString());
                         }
                         catch (Exception ex)
                         {
@@ -720,13 +541,141 @@ namespace LauncherAPI
             return selVersion;
         }
 
+        public static string GetVersionFromMinecraftJar(FileInfo file, IEnumerable<string> rvers, JObject jobj, out JObject deeper, int dkb = 1)
+        {
+            Dictionary<string, int> weights = jobj["versions"].Cast<JObject>().ToDictionary(x => x["id"].ToString(), x => int.Parse(x["size"].ToString()));
+
+            string version = "",
+                   woutext = file.Name.Replace(file.Extension, "");
+
+            //Console.WriteLine("Count: {0}; Woutext: {1}", rvers.Count(), woutext);
+
+            if (rvers.Contains(woutext))
+            {
+                Console.WriteLine("Found recognized version: {0}", woutext);
+
+                deeper = null;
+                return woutext;
+            }
+
+            try
+            {
+                if (IsValidJAR(file.FullName))
+                {
+                    Console.WriteLine("Analyzing valid JAR called {0}", file.Name);
+                    Console.WriteLine();
+                    //DKB is Estimated balanced weight
+                    weights = weights.Where(x => x.Value.Between(file.Length - (dkb * 1024), file.Length + (dkb * 1024))).ToDictionary(x => x.Key, x => x.Value);
+
+                    if (weights.Count == 1)
+                    {
+                        Console.WriteLine(weights.ElementAt(0).Value != file.Length ? "There is a posible version: {0}" : "The desired version is {0}", weights.ElementAt(0).Key);
+
+                        deeper = null;
+                        return weights.ElementAt(0).Key;
+                    }
+                    else if (weights.Count > 1)
+                    {
+                        Console.WriteLine("There are diferent versions that differs {0}KB from the local JAR file", dkb);
+                        weights.ForEach((x) =>
+                        {
+                            Console.WriteLine("{0}: {1} bytes (diff: {2} bytes)", x.Key, x.Value, Math.Abs(file.Length - x.Value));
+
+                            //We have to discard, because we want only one result from DeeperSearch...
+                            //If filename is not empty that means we want to dump into a file
+                        });
+
+                        Console.WriteLine();
+                        Console.WriteLine("Searching for a maching version...");
+                        Console.WriteLine();
+
+                        deeper = DeeperSearch(file, weights.Keys.AsEnumerable(), out version, true);
+                        return version;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Your Minecraft JAR has changed a lot to be recognized as any established version, by this reason, we will make a deeper search... (Weight: {0})", file.Length);
+                        Console.WriteLine();
+                        //Raro que el minecraft-.jar esté aqui
+
+                        deeper = DeeperSearch(file, rvers, out version, true);
+                        return version;
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid version found ({0}), maybe this is a forge version ;-) ;-)", file.Name);
+                    Console.WriteLine();
+
+                    version = GetForgeVersion(file.FullName)["jar"].ToString();
+
+                    MsgValidKey(version);
+
+                    deeper = AddObject(file.Name, version);
+                    return version;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Not real JAR file!!");
+                Console.WriteLine(ex);
+            }
+
+            deeper = null;
+            return version;
+        }
+
+        public static JObject DeeperSearch(FileInfo file, IEnumerable<string> col, out string validKey, bool dump = false)
+        {
+            validKey = (string)ReadJAR(file.FullName, (zipfile, item, valid) =>
+            {
+                using (StreamReader s = new StreamReader(zipfile.GetInputStream(item)))
+                {
+                    // stream with the file
+                    string contents = s.ReadToEnd();
+
+                    foreach (string x in col)
+                        if (item.Name.Contains(".class") && contents.Contains(x))
+                        {
+                            Console.WriteLine("Found valid version in entry {0} (Key: {1})", item.Name, x);
+                            Console.WriteLine();
+                            return x;
+                        }
+                }
+
+                return false;
+            });
+
+            MsgValidKey(validKey, col);
+
+            if (dump)
+                return AddObject(file.Name, validKey);
+            else
+                return default(JObject);
+        }
+
+        public static JObject AddObject(string filename, string version)
+        {
+            return new JObject(new JProperty("filename", filename), new JProperty("version", version));
+        }
+
+        private static void MsgValidKey(string validKey, IEnumerable<string> col = null)
+        {
+            if (!string.IsNullOrEmpty(validKey))
+                Console.WriteLine("Found valid version: {0}", validKey);
+            else
+                Console.WriteLine("No version found in any of the {0} files!!", col == null ? 1 : col.Count()); //Aqui dariamos a elegir al usuario
+
+            Console.WriteLine();
+        }
+
         public static ProcessStartInfo GenerateLaunchProccess()
         {
             ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que ver si el metodo usado funciona de verdad
 
             startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
-                                            (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
-                                            (ulong)(GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
+                                            (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
+                                            (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
                                             Path.Combine(ApiBasics.AssemblyFolderPATH, "natives"),
                                             GetAllLibs(),
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
@@ -775,9 +724,18 @@ namespace LauncherAPI
             return null;
         }
 
-        public static string DownloadFile(string path, string url, bool overwrite = false)
+        private static List<KeyValuePair<string, string>> dlArr = new List<KeyValuePair<string, string>>();
+
+        public static void DownloadFile(string path, string url)
         {
-            return ApiBasics.DownloadFile(path, url, dlProgressChanged, dlCompleted, overwrite);
+            dlArr.Add(new KeyValuePair<string, string>(url, path));
+        }
+
+        public static void DownloadArr(bool overwrite)
+        {
+            ApiBasics.DownloadFile(dlArr.AsEnumerable(), dlProgressChanged, dlCompleted, overwrite);
+            foreach (var dl in dlArr)
+                dlArr.Remove(dl);
         }
 
         public static string DownloadSyncFile(string path, string url, bool overwrite = false)

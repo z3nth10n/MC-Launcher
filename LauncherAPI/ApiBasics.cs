@@ -1,5 +1,6 @@
 ﻿using MimeTypes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.IO;
@@ -10,6 +11,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace LauncherAPI
@@ -207,7 +209,7 @@ namespace LauncherAPI
             for (int i = 0; i < 10; i++)
             {
                 form.Location = new Point(original.X + rnd.Next(-shake_amplitude, shake_amplitude), original.Y + rnd.Next(-shake_amplitude, shake_amplitude));
-                System.Threading.Thread.Sleep(20);
+                Thread.Sleep(20);
             }
             form.Location = original;
         }
@@ -221,40 +223,66 @@ namespace LauncherAPI
             }
         }
 
-        public static string DownloadFile(string path, string url, Action<long, long, string, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
+        public static string DownloadFile(string path, string url, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
+        {
+            List<KeyValuePair<string, string>> arr = new List<KeyValuePair<string, string>>();
+            arr.Add(new KeyValuePair<string, string>(url, path));
+            DownloadFile(arr.AsEnumerable(), dlProgressChanged, dlCompleted, overwrite);
+            return path;
+        }
+
+        private static int indexDl = 0;
+
+        public static void DownloadFile(IEnumerable<KeyValuePair<string, string>> urlPath, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged = null, Action dlCompleted = null, bool overwrite = false)
+        {
+            Thread th = new Thread(async () =>
+            {
+                using (WebClient wc = new WebClient())
+                {
+                    AsyncCompletedEventHandler aCEH = null;
+
+                    DownloadProgressChangedEventHandler dlProgressChangedEventHadler = new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, urlPath); });
+                    AsyncCompletedEventHandler asyncCompletedEventHandler = new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted, dlProgressChangedEventHadler, aCEH); });
+
+                    aCEH = asyncCompletedEventHandler;
+
+                    if (dlProgressChanged != null) wc.DownloadProgressChanged += dlProgressChangedEventHadler;
+                    if (dlCompleted != null) wc.DownloadFileCompleted += asyncCompletedEventHandler;
+
+                    if (urlPath.Count() == 1)
+                    {
+                        string url = urlPath.ElementAt(0).Key, path = urlPath.ElementAt(0).Value;
+                        Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
+                        await wc.DownloadExtFile(path, url, overwrite);
+                    }
+                    else
+                    {
+                        foreach (var kvURLP in urlPath)
+                        {
+                            await wc.DownloadExtFile(kvURLP.Value, kvURLP.Key, overwrite);
+                            ++indexDl;
+                        }
+                    }
+                }
+            });
+
+            //Reset indexes...
+            indexDl = 0;
+            th.Start();
+        }
+
+        private async static Task DownloadExtFile(this WebClient wc, string path, string url, bool overwrite)
         {
             if (PreviousChk(path) || overwrite)
-            {
-                Console.WriteLine("Downloading '{0}' from '{1}', please wait...", Path.GetFileName(path), url.CleverSubstring());
-                Thread th = new Thread(() =>
-                {
-                    using (WebClient wc = new WebClient())
-                    {
-                        AsyncCompletedEventHandler aCEH = null;
-
-                        DownloadProgressChangedEventHandler dlProgressChangedEventHadler = new DownloadProgressChangedEventHandler((sender, e) => { Wc_DownloadProgressChanged(sender, e, dlProgressChanged, Path.GetFileName(path)); });
-                        AsyncCompletedEventHandler asyncCompletedEventHandler = new AsyncCompletedEventHandler((sender, e) => { Wc_DownloadFileCompleted(sender, e, dlCompleted, dlProgressChangedEventHadler, aCEH); });
-
-                        aCEH = asyncCompletedEventHandler;
-
-                        if (dlProgressChanged != null) wc.DownloadProgressChanged += dlProgressChangedEventHadler;
-                        if (dlCompleted != null) wc.DownloadFileCompleted += asyncCompletedEventHandler;
-
-                        wc.DownloadFileAsync(new Uri(url), path);
-                    }
-                });
-                th.Start();
-            }
+                await new Task(() => wc.DownloadFileAsync(new Uri(url), path));
             else
                 Console.WriteLine("File '{0}' already exists! Skipping...", Path.GetFileName(path));
-
-            return path;
         }
 
         private static DateTime lastUpdate;
         private static long lastBytes = 0;
 
-        private static void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e, Action<long, long, string, long> dlProgressChanged, string file)
+        private static void Wc_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e, Action<long, long, KeyValuePair<string, string>, long> dlProgressChanged, IEnumerable<KeyValuePair<string, string>> file)
         {
             if (lastBytes == 0)
             {
@@ -273,7 +301,7 @@ namespace LauncherAPI
             }
             catch { }
 
-            dlProgressChanged(e.BytesReceived, e.TotalBytesToReceive, file, bytesPerSecond);
+            dlProgressChanged(e.BytesReceived, e.TotalBytesToReceive, file.ElementAt(indexDl), bytesPerSecond);
 
             lastBytes = e.BytesReceived;
             lastUpdate = now;
@@ -341,6 +369,59 @@ namespace LauncherAPI
                 return OS.OSx;
             else
                 return OS.Other;
+        }
+
+        public static bool RemoteFileExists(string url)
+        {
+            try
+            {
+                //Creating the HttpWebRequest
+                HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
+                //Setting the Request method HEAD, you can also use GET too.
+                request.Method = "HEAD";
+                //Getting the Web Response.
+                using (HttpWebResponse response = request.GetResponse() as HttpWebResponse)
+                {
+                    //Returns TRUE if the Status code == 200
+                    return (response.StatusCode == HttpStatusCode.OK);
+                }
+            }
+            catch
+            {
+                //Any exception will returns false.
+                return false;
+            }
+        }
+
+        public static string CleverBackslashes(this string path)
+        {
+            return GetSO() != OS.Windows ? path : path.Replace('/', '\\');
+        }
+
+        public static ulong GetTotalMemoryInBytes()
+        {
+            return new Microsoft.VisualBasic.Devices.ComputerInfo().TotalPhysicalMemory;
+        }
+
+        public static List<string> DirSearch(string sDir)
+        {
+            List<string> files = new List<string>();
+
+            try
+            {
+                foreach (string d in Directory.GetDirectories(sDir))
+                {
+                    foreach (string f in Directory.GetFiles(d))
+                        files.Add(f);
+                    files.AddRange(DirSearch(d));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
+            return files;
         }
     }
 }

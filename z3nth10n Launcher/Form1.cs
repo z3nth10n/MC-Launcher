@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Windows.Forms;
 
@@ -80,8 +81,9 @@ namespace z3nth10n_Launcher
             {
                 Invoke((MethodInvoker)delegate
                 {
+                    //path)
                     double percentage = (double)bytesIn / totalBytes * 100d;
-                    lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", fileName, (int)percentage, (bytesSec / 1024d).ToString("F2"));
+                    lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2} KB/sec", Path.GetFileName(fileName.Value), (int)percentage, (bytesSec / 1024d).ToString("F2"));
                     progressBar1.Value = (int)percentage;
                 });
             };
