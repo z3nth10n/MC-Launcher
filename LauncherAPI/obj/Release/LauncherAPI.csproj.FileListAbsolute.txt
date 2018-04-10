@@ -1,1 +1,6 @@
+/home/usuario/MC-Launcher/LauncherAPI/bin/Release/LauncherAPI.dll
+/home/usuario/MC-Launcher/LauncherAPI/bin/Release/ICSharpCode.SharpZipLib.dll
+/home/usuario/MC-Launcher/LauncherAPI/bin/Release/MimeTypeMap.dll
+/home/usuario/MC-Launcher/LauncherAPI/bin/Release/Newtonsoft.Json.dll
 /home/usuario/MC-Launcher/LauncherAPI/obj/Release/LauncherAPI.csproj.CoreCompileInputs.cache
+/home/usuario/MC-Launcher/LauncherAPI/obj/Release/LauncherAPI.dll

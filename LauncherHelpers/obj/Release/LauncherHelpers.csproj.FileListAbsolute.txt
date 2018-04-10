@@ -1,0 +1,11 @@
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/LauncherHelpers.exe.config
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/LauncherHelpers.exe
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/ICSharpCode.SharpZipLib.dll
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/LauncherAPI.dll
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/Newtonsoft.Json.dll
+/home/usuario/MC-Launcher/LauncherHelpers/bin/Release/MimeTypeMap.dll
+/home/usuario/MC-Launcher/LauncherHelpers/obj/Release/LauncherHelpers.exe.config
+/home/usuario/MC-Launcher/LauncherHelpers/obj/Release/LauncherHelpers.Properties.Resources.resources
+/home/usuario/MC-Launcher/LauncherHelpers/obj/Release/LauncherHelpers.csproj.GenerateResource.Cache
+/home/usuario/MC-Launcher/LauncherHelpers/obj/Release/LauncherHelpers.csproj.CoreCompileInputs.cache
+/home/usuario/MC-Launcher/LauncherHelpers/obj/Release/LauncherHelpers.exe

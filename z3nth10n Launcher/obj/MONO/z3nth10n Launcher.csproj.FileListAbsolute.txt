@@ -1,0 +1,13 @@
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/z3nth10n Launcher.exe.config
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/z3nth10n Launcher.exe
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/ICSharpCode.SharpZipLib.dll
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/LauncherAPI.dll
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/Newtonsoft.Json.dll
+/home/usuario/MC-Launcher/z3nth10n Launcher/bin/MONO/MimeTypeMap.dll
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n Launcher.csprojResolveAssemblyReference.cache
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n Launcher.exe.config
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n_Launcher.Form1.resources
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n_Launcher.Properties.Resources.resources
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n Launcher.csproj.GenerateResource.Cache
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n Launcher.csproj.CoreCompileInputs.cache
+/home/usuario/MC-Launcher/z3nth10n Launcher/obj/MONO/z3nth10n Launcher.exe

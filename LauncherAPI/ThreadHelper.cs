@@ -4,7 +4,7 @@ namespace LauncherAPI
 {
     public static class ThreadHelper
     {
-#if MONO
+#if TRACE
         private delegate void SetTextCallback<T>(Form f, T ctrl, string property, object obj) where T : Control;
 #else
         private delegate void SetTextCallback<T>(Form f, in T ctrl, string property, object obj) where T : Control;
@@ -16,7 +16,7 @@ namespace LauncherAPI
         /// <param name="form">The calling form</param>
         /// <param name="ctrl"></param>
         /// <param name="text"></param>
-#if MONO
+#if TRACE
         public static void SetValue<T>(this Form form, T ctrl, string property, object obj) where T : Control
 #else
         public static void SetValue<T>(this Form form, in T ctrl, string property, object obj) where T : Control
