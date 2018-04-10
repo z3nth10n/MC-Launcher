@@ -335,7 +335,7 @@ namespace LauncherAPI
             }
         }
 
-        private static void DownloadNativeLibraries(string lPath, JObject jObject)
+        private static void DownloadNativeLibraries(string lPath, JObject jObject, bool debugDL = false)
         {
             foreach (JToken lib in jObject["libraries"])
             {
@@ -347,7 +347,7 @@ namespace LauncherAPI
                 if (artf != null)
                     DL.DownloadFile(Path.Combine(lPath, artf["path"].ToString().CleverBackslashes()), artf["url"].ToString());
                 else
-                    Console.WriteLine("Artifact null!!", dl.ToString());
+                    Console.WriteLine("Artifact null!! {0}", debugDL ? dl.ToString() : "");
 
                 if (clssf == null)
                 {

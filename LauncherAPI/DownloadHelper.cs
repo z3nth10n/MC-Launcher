@@ -6,7 +6,7 @@ namespace LauncherAPI
 {
     public static class DownloadHelper
     {
-        public static FileDownloader downloader = new FileDownloader();
+        public readonly static FileDownloader downloader = new FileDownloader();
 
         public static void DownloadFile(string path, string url)
         {

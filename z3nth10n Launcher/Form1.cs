@@ -10,7 +10,7 @@ namespace z3nth10n_Launcher
 {
     public partial class Form1 : Form
     {
-        private static bool completedRevision = false;
+        private bool completedRevision = false;
 
         private static string minecraftJAR
         {
@@ -24,30 +24,16 @@ namespace z3nth10n_Launcher
         {
             InitializeComponent();
 
-            DL.downloader.StateChanged += Downloader_StateChanged;
+            /*DL.downloader.StateChanged += Downloader_StateChanged;
             DL.downloader.CalculatingFileSize += Downloader_CalculatingFileSize;
-            DL.downloader.ProgressChanged += Downloader_ProgressChanged;
             DL.downloader.FileDownloadAttempting += Downloader_FileDownloadAttempting;
             DL.downloader.FileDownloadStarted += Downloader_FileDownloadStarted;
-            DL.downloader.Completed += Downloader_Completed;
             DL.downloader.CancelRequested += Downloader_CancelRequested;
             DL.downloader.DeletingFilesAfterCancel += Downloader_DeletingFilesAfterCancel;
-            DL.downloader.Canceled += Downloader_Canceled;
-        }
+            DL.downloader.Canceled += Downloader_Canceled;*/
 
-        private void Downloader_Canceled(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Downloader_DeletingFilesAfterCancel(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Downloader_CancelRequested(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
+            DL.downloader.ProgressChanged += Downloader_ProgressChanged;
+            DL.downloader.Completed += Downloader_Completed;
         }
 
         private void Downloader_Completed(object sender, EventArgs e)
@@ -59,16 +45,6 @@ namespace z3nth10n_Launcher
             }
         }
 
-        private void Downloader_FileDownloadStarted(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Downloader_FileDownloadAttempting(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
-        }
-
         private void Downloader_ProgressChanged(object sender, EventArgs e)
         {
             try
@@ -78,16 +54,6 @@ namespace z3nth10n_Launcher
             }
             catch
             { }
-        }
-
-        private void Downloader_CalculatingFileSize(object sender, int fileNr)
-        {
-            //throw new NotImplementedException();
-        }
-
-        private void Downloader_StateChanged(object sender, EventArgs e)
-        {
-            //throw new NotImplementedException();
         }
 
         private void Form1_Load(object sender, EventArgs e)

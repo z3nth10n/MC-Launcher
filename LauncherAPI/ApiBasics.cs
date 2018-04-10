@@ -72,8 +72,14 @@ namespace LauncherAPI
                 if (_IsConsole == null)
                 {
                     _IsConsole = true;
-                    try { Console.WriteLine(Console.WindowHeight); }
-                    catch { _IsConsole = false; }
+                    try
+                    {
+                        Console.WriteLine(Console.WindowHeight);
+                    }
+                    catch
+                    {
+                        _IsConsole = false;
+                    }
                 }
                 return _IsConsole.Value;
             }

@@ -28,7 +28,7 @@ namespace LauncherAPI
 
     /// <summary>Class for downloading files in the background that supports info about their progress, the total progress, cancellation, pausing, and resuming. The downloads will run on a separate thread so you don't have to worry about multihreading yourself. </summary>
     /// <remarks>Class FileDownloader v1.0.2, by De Dauw Jeroen - April 2009</remarks>
-    public class FileDownloader : System.Object, IDisposable
+    public class FileDownloader : IDisposable
     {
         #region Nested Types
 
@@ -36,7 +36,7 @@ namespace LauncherAPI
         public struct FileInfo
         {
             /// <summary>The complete path of the file (directory + filename)</summary>
-            public string FilePath;
+            public string FilePath { get; set; }
 
             /// <summary>The name of the file</summary>
             public string Name
@@ -47,7 +47,7 @@ namespace LauncherAPI
                 }
             }
 
-            public string Url;
+            public string Url { get; set; }
 
             /// <summary>Create a new instance of FileInfo</summary>
             /// <param name="path">The complete path of the file (directory + filename)</param>
@@ -151,33 +151,32 @@ namespace LauncherAPI
         #region Fields
 
         // Default amount of decimals
-        private const Int32 default_decimals = 2;
+        private const int default_decimals = 2;
 
         // Delegates
         public delegate void FailEventHandler(object sender, Exception ex);
 
-        public delegate void CalculatingFileSizeEventHandler(object sender, Int32 fileNr);
+        public delegate void CalculatingFileSizeEventHandler(object sender, int fileNr);
 
         // The download worker
-        private BackgroundWorker bgwDownloader = new BackgroundWorker();
+        private readonly BackgroundWorker bgwDownloader = new BackgroundWorker();
 
         // Preferences
-        private Boolean m_supportsProgress, m_deleteCompletedFiles;
+        private bool m_supportsProgress;
 
-        private Int32 m_packageSize, m_stopWatchCycles;
+        private int m_packageSize, m_stopWatchCycles;
 
         // State
-        private Boolean m_disposed = false;
+        private readonly bool m_disposed = false;
 
-        private Boolean m_busy, m_paused, m_canceled;
-        private Int64 m_currentFileProgress, m_totalProgress, m_currentFileSize;
-        private Int32 m_currentSpeed, m_fileNr;
+        private bool m_busy, m_paused, m_canceled;
+        private long m_currentFileProgress, m_totalProgress, m_currentFileSize;
+        private int m_currentSpeed, m_fileNr;
 
         // Data
-        //private String m_localDirectory;
 
         private List<FileInfo> m_files = new List<FileInfo>();
-        private Int64 m_totalSize;
+        private long m_totalSize;
 
         #endregion Fields
 
@@ -190,13 +189,13 @@ namespace LauncherAPI
         }
 
         /// <summary>Create a new instance of a FileDownloader</summary>
-        /// <param name="supportsProgress">Optional. Boolean. Should the FileDownloader support total progress statistics?</param>
-        public FileDownloader(Boolean supportsProgress)
+        /// <param name="supportsProgress">Optional. bool. Should the FileDownloader support total progress statistics?</param>
+        public FileDownloader(bool supportsProgress)
         {
             initizalize(supportsProgress);
         }
 
-        private void initizalize(Boolean supportsProgress)
+        private void initizalize(bool supportsProgress)
         {
             // Set the bgw properties
             bgwDownloader.WorkerReportsProgress = true;
@@ -236,7 +235,7 @@ namespace LauncherAPI
             IsBusy = false;
         }
 
-        public void Stop(Boolean deleteCompletedFiles)
+        public void Stop(bool deleteCompletedFiles)
         {
             DeleteCompletedFilesAfterCancel = deleteCompletedFiles;
             Stop();
@@ -251,21 +250,21 @@ namespace LauncherAPI
         #region Size formatting functions
 
         /// <summary>Format an amount of bytes to a more readible notation with binary notation symbols</summary>
-        /// <param name="size">Required. Int64. The raw amount of bytes</param>
-        public static string FormatSizeBinary(Int64 size)
+        /// <param name="size">Required. long. The raw amount of bytes</param>
+        public static string FormatSizeBinary(long size)
         {
             return FileDownloader.FormatSizeBinary(size, default_decimals);
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with binary notation symbols</summary>
-        /// <param name="size">Required. Int64. The raw amount of bytes</param>
-        /// <param name="decimals">Optional. Int32. The amount of decimals you want to have displayed in the notation</param>
-        public static string FormatSizeBinary(Int64 size, Int32 decimals)
+        /// <param name="size">Required. long. The raw amount of bytes</param>
+        /// <param name="decimals">Optional. int. The amount of decimals you want to have displayed in the notation</param>
+        public static string FormatSizeBinary(long size, int decimals)
         {
             // By De Dauw Jeroen - April 2009 - jeroen_dedauw@yahoo.com
-            String[] sizes = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
-            Double formattedSize = size;
-            Int32 sizeIndex = 0;
+            string[] sizes = { "B", "KiB", "MiB", "GiB", "TiB", "PiB", "EiB", "ZiB", "YiB" };
+            double formattedSize = size;
+            int sizeIndex = 0;
             while (formattedSize >= 1024 && sizeIndex < sizes.Length)
             {
                 formattedSize /= 1024;
@@ -275,21 +274,21 @@ namespace LauncherAPI
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with decimal notation symbols</summary>
-        /// <param name="size">Required. Int64. The raw amount of bytes</param>
-        public static string FormatSizeDecimal(Int64 size)
+        /// <param name="size">Required. long. The raw amount of bytes</param>
+        public static string FormatSizeDecimal(long size)
         {
             return FileDownloader.FormatSizeDecimal(size, default_decimals);
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with decimal notation symbols</summary>
-        /// <param name="size">Required. Int64. The raw amount of bytes</param>
-        /// <param name="decimals">Optional. Int32. The amount of decimals you want to have displayed in the notation</param>
-        public static string FormatSizeDecimal(Int64 size, Int32 decimals)
+        /// <param name="size">Required. long. The raw amount of bytes</param>
+        /// <param name="decimals">Optional. int. The amount of decimals you want to have displayed in the notation</param>
+        public static string FormatSizeDecimal(long size, int decimals)
         {
             // By De Dauw Jeroen - April 2009 - jeroen_dedauw@yahoo.com
-            String[] sizes = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
-            Double formattedSize = size;
-            Int32 sizeIndex = 0;
+            string[] sizes = { "B", "kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB" };
+            double formattedSize = size;
+            int sizeIndex = 0;
             while (formattedSize >= 1000 && sizeIndex < sizes.Length)
             {
                 formattedSize /= 1000;
@@ -304,7 +303,7 @@ namespace LauncherAPI
 
         #region Protected methods
 
-        protected virtual void Dispose(Boolean disposing)
+        protected virtual void Dispose(bool disposing)
         {
             if (!m_disposed)
             {
@@ -325,11 +324,9 @@ namespace LauncherAPI
 
         private void bgwDownloader_DoWork(object sender, DoWorkEventArgs e)
         {
-            Int32 fileNr = 0;
+            int fileNr = 0;
 
             if (SupportsProgress) { calculateFilesSize(); }
-
-            //if (!Directory.Exists(LocalDirectory)) { Directory.CreateDirectory(LocalDirectory); }
 
             while (fileNr < Files.Count && !bgwDownloader.CancellationPending)
             {
@@ -360,9 +357,9 @@ namespace LauncherAPI
             fireEventFromBgw(Event.CalculationFileSizesStarted);
             m_totalSize = 0;
 
-            for (Int32 fileNr = 0; fileNr < Files.Count; fileNr++)
+            for (int fileNr = 0; fileNr < Files.Count; fileNr++)
             {
-                bgwDownloader.ReportProgress((Int32)InvokeType.CalculatingFileNrRaiser, fileNr + 1);
+                bgwDownloader.ReportProgress((int)InvokeType.CalculatingFileNrRaiser, fileNr + 1);
                 try
                 {
                     HttpWebRequest webReq = (HttpWebRequest)WebRequest.Create(Files[fileNr].FilePath);
@@ -370,8 +367,11 @@ namespace LauncherAPI
                     m_totalSize += webResp.ContentLength;
                     webResp.Close();
                 }
-                catch (Exception)
-                { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("There was a problem calculating file size!!");
+                    Console.WriteLine(ex);
+                }
             }
             fireEventFromBgw(Event.FileSizesCalculationComplete);
         }
@@ -381,18 +381,18 @@ namespace LauncherAPI
             bgwDownloader.ReportProgress((int)InvokeType.EventRaiser, eventName);
         }
 
-        private void downloadFile(Int32 fileNr)
+        private void downloadFile(int fileNr)
         {
             m_currentFileSize = 0;
             fireEventFromBgw(Event.FileDownloadAttempting);
 
             FileInfo file = Files[fileNr];
-            Int64 size = 0;
+            long size = 0;
 
             Byte[] readBytes = new Byte[PackageSize];
-            Int32 currentPackageSize;
+            int currentPackageSize;
             System.Diagnostics.Stopwatch speedTimer = new System.Diagnostics.Stopwatch();
-            Int32 readings = 0;
+            int readings = 0;
             Exception exc = null;
 
             FileStream writer = new FileStream(file.FilePath, FileMode.Create);
@@ -415,7 +415,7 @@ namespace LauncherAPI
 
             if (exc != null)
             {
-                bgwDownloader.ReportProgress((Int32)InvokeType.FileDownloadFailedRaiser, exc);
+                bgwDownloader.ReportProgress((int)InvokeType.FileDownloadFailedRaiser, exc);
             }
             else
             {
@@ -426,7 +426,7 @@ namespace LauncherAPI
 
                     speedTimer.Start();
 
-                    currentPackageSize = webResp.GetResponseStream().Read(readBytes, 0, PackageSize);
+                    currentPackageSize = webResp != null ? webResp.GetResponseStream().Read(readBytes, 0, PackageSize) : 0;
 
                     m_currentFileProgress += currentPackageSize;
                     m_totalProgress += currentPackageSize;
@@ -437,7 +437,7 @@ namespace LauncherAPI
 
                     if (readings >= StopWatchCyclesAmount)
                     {
-                        m_currentSpeed = (Int32)(PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
+                        m_currentSpeed = (int)(PackageSize * StopWatchCyclesAmount * 1000 / (speedTimer.ElapsedMilliseconds + 1));
                         speedTimer.Reset();
                         readings = 0;
                     }
@@ -445,21 +445,18 @@ namespace LauncherAPI
 
                 speedTimer.Stop();
                 writer.Close();
-                webResp.Close();
+                if (webResp != null) webResp.Close();
                 if (!bgwDownloader.CancellationPending) { fireEventFromBgw(Event.FileDownloadSucceeded); }
             }
             fireEventFromBgw(Event.FileDownloadStopped);
         }
 
-        private void cleanUpFiles(Int32 start, Int32 length)
+        private void cleanUpFiles(int start, int length)
         {
-            Int32 last = length < 0 ? Files.Count - 1 : start + length - 1;
+            int last = length < 0 ? Files.Count - 1 : start + length - 1;
 
-            for (Int32 fileNr = start; fileNr <= last; fileNr++)
-            {
-                //String fullPath = LocalDirectory + "\\" + Files[fileNr].Name;
+            for (int fileNr = start; fileNr <= last; fileNr++)
                 if (File.Exists(Files[fileNr].FilePath)) { File.Delete(Files[fileNr].FilePath); }
-            }
         }
 
         private void bgwDownloader_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -527,7 +524,7 @@ namespace LauncherAPI
                     break;
 
                 case InvokeType.CalculatingFileNrRaiser:
-                    CalculatingFileSize?.Invoke(this, (Int32)e.UserState);
+                    CalculatingFileSize?.Invoke(this, (int)e.UserState);
                     break;
             }
         }
@@ -553,18 +550,8 @@ namespace LauncherAPI
             }
         }
 
-        /// <summary>Gets or sets the local directory in which files will be stored</summary>
-        /*public String LocalDirectory
-        {
-            get { return m_localDirectory; }
-            set
-            {
-                if (LocalDirectory != value) { m_localDirectory = value; }
-            }
-        }*/
-
         /// <summary>Gets or sets if the FileDownloader should support total progress statistics. Note that when enabled, the FileDownloader will have to get the size of each file before starting to download them, which can delay the operation.</summary>
-        public Boolean SupportsProgress
+        public bool SupportsProgress
         {
             get { return m_supportsProgress; }
             set
@@ -581,14 +568,10 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets or sets if when the download process is cancelled the complete downloads should be deleted</summary>
-        public Boolean DeleteCompletedFilesAfterCancel
-        {
-            get { return m_deleteCompletedFiles; }
-            set { m_deleteCompletedFiles = value; }
-        }
+        public bool DeleteCompletedFilesAfterCancel { get; set; }
 
         /// <summary>Gets or sets the size of the blocks that will be downloaded</summary>
-        public Int32 PackageSize
+        public int PackageSize
         {
             get { return m_packageSize; }
             set
@@ -605,7 +588,7 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets or sets the amount of blocks that need to be downloaded before the progress speed is re-calculated. Note: setting this to a low value might decrease the accuracy</summary>
-        public Int32 StopWatchCyclesAmount
+        public int StopWatchCyclesAmount
         {
             get { return m_stopWatchCycles; }
             set
@@ -622,7 +605,7 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets or sets the busy state of the FileDownloader</summary>
-        public Boolean IsBusy
+        public bool IsBusy
         {
             get { return m_busy; }
             set
@@ -652,7 +635,7 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets or sets the pause state of the FileDownloader</summary>
-        public Boolean IsPaused
+        public bool IsPaused
         {
             get { return m_paused; }
             set
@@ -670,7 +653,8 @@ namespace LauncherAPI
                         {
                             Resumed?.Invoke(this, new EventArgs());
                         }
-                        IsPausedChanged?.Invoke(this, new EventArgs()); StateChanged?.Invoke(this, new EventArgs());
+                        IsPausedChanged?.Invoke(this, new EventArgs());
+                        StateChanged?.Invoke(this, new EventArgs());
                     }
                 }
                 else
@@ -681,31 +665,31 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets if the FileDownloader can start</summary>
-        public Boolean CanStart
+        public bool CanStart
         {
             get { return !IsBusy; }
         }
 
         /// <summary>Gets if the FileDownloader can pause</summary>
-        public Boolean CanPause
+        public bool CanPause
         {
             get { return IsBusy && !IsPaused && !bgwDownloader.CancellationPending; }
         }
 
         /// <summary>Gets if the FileDownloader can resume</summary>
-        public Boolean CanResume
+        public bool CanResume
         {
             get { return IsBusy && IsPaused && !bgwDownloader.CancellationPending; }
         }
 
         /// <summary>Gets if the FileDownloader can stop</summary>
-        public Boolean CanStop
+        public bool CanStop
         {
             get { return IsBusy && !bgwDownloader.CancellationPending; }
         }
 
         /// <summary>Gets the total size of all files together. Only avaible when the FileDownloader suports progress</summary>
-        public Int64 TotalSize
+        public long TotalSize
         {
             get
             {
@@ -721,29 +705,29 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets the total amount of bytes downloaded</summary>
-        public Int64 TotalProgress
+        public long TotalProgress
         {
             get { return m_totalProgress; }
         }
 
         /// <summary>Gets the amount of bytes downloaded of the current file</summary>
-        public Int64 CurrentFileProgress
+        public long CurrentFileProgress
         {
             get { return m_currentFileProgress; }
         }
 
         /// <summary>Gets the total download percentage. Only avaible when the FileDownloader suports progress</summary>
-        public Double TotalPercentage()
+        public double TotalPercentage()
         {
             return TotalPercentage(default_decimals);
         }
 
         /// <summary>Gets the total download percentage. Only avaible when the FileDownloader suports progress</summary>
-        public Double TotalPercentage(Int32 decimals)
+        public double TotalPercentage(int decimals)
         {
             if (SupportsProgress)
             {
-                return Math.Round((Double)TotalProgress / TotalSize * 100, decimals);
+                return Math.Round((double)TotalProgress / TotalSize * 100, decimals);
             }
             else
             {
@@ -752,19 +736,19 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets the percentage of the current file progress</summary>
-        public Double CurrentFilePercentage()
+        public double CurrentFilePercentage()
         {
             return CurrentFilePercentage(default_decimals);
         }
 
         /// <summary>Gets the percentage of the current file progress</summary>
-        public Double CurrentFilePercentage(Int32 decimals)
+        public double CurrentFilePercentage(int decimals)
         {
-            return Math.Round((Double)CurrentFileProgress / CurrentFileSize * 100, decimals);
+            return Math.Round((double)CurrentFileProgress / CurrentFileSize * 100, decimals);
         }
 
         /// <summary>Gets the current download speed in bytes</summary>
-        public Int32 DownloadSpeed
+        public int DownloadSpeed
         {
             get { return m_currentSpeed; }
         }
@@ -776,13 +760,13 @@ namespace LauncherAPI
         }
 
         /// <summary>Gets the size of the current file in bytes</summary>
-        public Int64 CurrentFileSize
+        public long CurrentFileSize
         {
             get { return m_currentFileSize; }
         }
 
         /// <summary>Gets if the last download was canceled by the user</summary>
-        public Boolean HasBeenCanceled
+        public bool HasBeenCanceled
         {
             get { return m_canceled; }
         }
