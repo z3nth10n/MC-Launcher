@@ -46,7 +46,7 @@ namespace z3nth10n_Launcher
             DL.downloader.ProgressChanged += Downloader_ProgressChanged;
             DL.downloader.Completed += Downloader_Completed;
 
-            //Console.WriteLine("Java Path: " + Path.Combine(ApiLauncher.GetJavaInstallationPath(), "bin\\Java.exe"));
+            Console.WriteLine("Java Path: " + ApiLauncher.GetJavaInstallationPath());
         }
 
         private void Downloader_Completed(object sender, EventArgs e)

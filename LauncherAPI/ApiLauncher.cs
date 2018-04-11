@@ -701,41 +701,45 @@ namespace LauncherAPI
 
         public static string GetJavaInstallationPath()
         {
-            string environmentPath = Environment.GetEnvironmentVariable("JAVA_HOME");
-            if (!string.IsNullOrEmpty(environmentPath))
+            if (ApiBasics.GetSO() == OS.Linux)
             {
-                return environmentPath;
+                return ApiBasics.ExecuteBashCommand("readlink -f $(which java)");
             }
-
-            const string JAVA_KEY = "SOFTWARE\\JavaSoft\\Java Runtime Environment\\";
-
-            var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            using (var rk = localKey.OpenSubKey(JAVA_KEY))
+            else if (ApiBasics.GetSO() == OS.Windows)
             {
-                if (rk != null)
+                string environmentPath = Environment.GetEnvironmentVariable("JAVA_HOME");
+                if (!string.IsNullOrEmpty(environmentPath))
                 {
-                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
-                    using (var key = rk.OpenSubKey(currentVersion))
-                    {
-                        return key.GetValue("JavaHome").ToString();
-                    }
+                    return environmentPath;
                 }
-            }
 
-            localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            using (var rk = localKey.OpenSubKey(JAVA_KEY))
-            {
-                if (rk != null)
-                {
-                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
-                    using (var key = rk.OpenSubKey(currentVersion))
+                const string JAVA_KEY = "SOFTWARE\\JavaSoft\\Java Runtime Environment\\";
+                string javaPath = "";
+
+                var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                using (var rk = localKey.OpenSubKey(JAVA_KEY))
+                    if (rk != null)
                     {
-                        return key.GetValue("JavaHome").ToString();
+                        string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                        using (var key = rk.OpenSubKey(currentVersion))
+                            javaPath = key.GetValue("JavaHome").ToString();
                     }
-                }
-            }
 
-            return null;
+                localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                using (var rk = localKey.OpenSubKey(JAVA_KEY))
+                    if (rk != null)
+                    {
+                        string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                        using (var key = rk.OpenSubKey(currentVersion))
+                        {
+                            javaPath = key.GetValue("JavaHome").ToString();
+                        }
+                    }
+
+                return !string.IsNullOrEmpty(javaPath) ? Path.Combine(javaPath, "bin\\Java.exe") : "";
+            }
+            else
+                return null;
         }
 
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)
