@@ -1,4 +1,7 @@
-﻿using z3nth10n_Launcher.Properties;
+﻿using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using z3nth10n_Launcher.Properties;
 
 namespace z3nth10n_Launcher
 {
@@ -15,6 +18,29 @@ namespace z3nth10n_Launcher
             set
             {
                 settings.Username = value;
+                settings.Save();
+            }
+        }
+
+        public static StringCollection Nicks
+        {
+            get
+            {
+                return settings.Nicks;
+            }
+        }
+
+        public static void AddNick(string nick)
+        {
+            if (Nicks == null)
+            {
+                settings.Nicks = new StringCollection();
+                settings.Save();
+            }
+
+            if (!Nicks.Contains(nick))
+            {
+                Nicks.Add(nick);
                 settings.Save();
             }
         }

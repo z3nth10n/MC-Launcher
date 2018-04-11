@@ -8,9 +8,12 @@ namespace LauncherAPI
     {
         public readonly static FileDownloader downloader = new FileDownloader();
 
-        public static void DownloadFile(string path, string url)
+        public static void DownloadFile(string path, string url, bool overwrite = false)
         {
-            downloader.Files.Add(new FileDownloader.FileInfo(path, url));
+            if (!File.Exists(path) || overwrite)
+                downloader.Files.Add(new FileDownloader.FileInfo(path, url));
+            else
+                Console.WriteLine("File '{0}' already exists! Skipping... (Path: {1})", Path.GetFileName(path), path);
         }
 
         public static string DownloadSyncFile(string path, string url, bool overwrite = false)

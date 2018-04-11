@@ -34,5 +34,16 @@ namespace z3nth10n_Launcher.Properties {
                 this["Username"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection Nicks {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["Nicks"]));
+            }
+            set {
+                this["Nicks"] = value;
+            }
+        }
     }
 }

@@ -118,7 +118,7 @@ namespace LauncherAPI
             return libpath;
         }
 
-        public static string GetAllLibs(bool outputDebug = false)
+        public static string GetAllLibs(string filePath, bool outputDebug = false)
         {
             string libFolder = GetLibPath();
             StringBuilder ret = new StringBuilder();
@@ -127,8 +127,10 @@ namespace LauncherAPI
             foreach (string file in files)
             {
                 ret.Append(file);
-                if (files.Last() != file) ret.Append(";");
+                ret.Append(";");
             }
+
+            ret.Append(filePath);
 
             string rr = ret.ToString();
             if (!string.IsNullOrEmpty(rr))
@@ -304,7 +306,13 @@ namespace LauncherAPI
             else
                 return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
 
-            DL.downloader.Start();
+            if (DL.downloader.Files.Count > 0)
+                DL.downloader.Start();
+            else
+            {
+                Console.WriteLine("Nothing to download!!");
+                return "nothing";
+            }
 
             return "";
         }
@@ -316,6 +324,7 @@ namespace LauncherAPI
             else if (forgeFile.EndsWith(".jar.jar"))
                 forgeFile = forgeFile.Replace(".jar.jar", ".jar");
 
+            //Aquí solucionamos el W-IP del GetSelVersion que venía del KnownVersion
             if (!File.Exists(forgeFile))
                 DL.DownloadSyncFile(forgeFile, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", selVersion.Value));
 
@@ -393,7 +402,7 @@ namespace LauncherAPI
             Console.WriteLine();
         }
 
-        private static void DownloadNatives(string nativesDir)
+        private static void DownloadNatives(string nativesDir, bool nativesJar = false)
         {
             //Generate natives
             switch (ApiBasics.GetSO())
@@ -439,10 +448,13 @@ namespace LauncherAPI
 
             //Download common jars...
 
-            string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            if (nativesJar)
+            { //WIP ... esto no tiene que ver
+                string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            }
         }
 
         public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj)
@@ -549,7 +561,7 @@ namespace LauncherAPI
                 string version = Console.ReadLine();
 
                 if (rvers.Contains(version))
-                    selVersion = new KeyValuePair<string, string>(version, version); //Aqui habia un WIP no se ni por qué
+                    selVersion = new KeyValuePair<string, string>(version + ".jar", version);
                 else
                     return "Unrecognized versions, please restart...";
             }
@@ -683,18 +695,25 @@ namespace LauncherAPI
             Console.WriteLine();
         }
 
-        public static ProcessStartInfo GenerateLaunchProccess()
+        public static ProcessStartInfo GenerateLaunchProccess(string username, string minecraftJar, bool redirectOutput = false)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que ver si el metodo usado funciona de verdad
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetJavaInstallationPath());
 
-            startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
+            startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
                                             (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
                                             (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
                                             Path.Combine(ApiBasics.AssemblyFolderPATH, "natives"),
-                                            GetAllLibs(),
+                                            GetAllLibs(minecraftJar),
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
-                                            "username --> txtUsername.Text", "{ }");
-            startInfo.RedirectStandardOutput = true;
+                                            username, "{ }");
+
+            if (redirectOutput)
+            {
+                startInfo.RedirectStandardOutput = true;
+                startInfo.UseShellExecute = false;
+
+                Console.WriteLine(startInfo.Arguments);
+            }
 
             return startInfo;
         }

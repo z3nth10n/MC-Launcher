@@ -96,7 +96,7 @@ namespace LauncherHelpers
                         //{5} = Username
                         //{6} = ...
 
-                        Console.WriteLine(ApiLauncher.GenerateLaunchProccess().Arguments);
+                        Console.WriteLine(ApiLauncher.GenerateLaunchProccess("username", "").Arguments);
                         break;
 
                     case 5:

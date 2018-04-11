@@ -253,7 +253,7 @@ namespace LauncherAPI
         /// <param name="size">Required. long. The raw amount of bytes</param>
         public static string FormatSizeBinary(long size)
         {
-            return FileDownloader.FormatSizeBinary(size, default_decimals);
+            return FormatSizeBinary(size, default_decimals);
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with binary notation symbols</summary>
@@ -270,14 +270,14 @@ namespace LauncherAPI
                 formattedSize /= 1024;
                 sizeIndex += 1;
             }
-            return Math.Round(formattedSize, decimals) + sizes[sizeIndex];
+            return formattedSize.ToString("0." + new string('0', decimals)) + sizes[sizeIndex];
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with decimal notation symbols</summary>
         /// <param name="size">Required. long. The raw amount of bytes</param>
         public static string FormatSizeDecimal(long size)
         {
-            return FileDownloader.FormatSizeDecimal(size, default_decimals);
+            return FormatSizeDecimal(size, default_decimals);
         }
 
         /// <summary>Format an amount of bytes to a more readible notation with decimal notation symbols</summary>

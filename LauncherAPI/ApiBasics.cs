@@ -107,6 +107,14 @@ namespace LauncherAPI
             }
         }
 
+        public static char FolderDelimiter
+        {
+            get
+            {
+                return GetSO() == OS.Windows ? '\\' : '/';
+            }
+        }
+
         public static void ChkConn(object objState)
         {
             if (chk) chk = false;

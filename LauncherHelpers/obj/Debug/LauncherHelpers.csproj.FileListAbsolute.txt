@@ -12,3 +12,4 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\De
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\bin\Debug\MimeTypeMap.dll
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.Properties.Resources.resources
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.csproj.GenerateResource.Cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherHelpers\obj\Debug\LauncherHelpers.csprojResolveAssemblyReference.cache

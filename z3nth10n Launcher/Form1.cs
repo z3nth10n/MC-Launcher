@@ -1,6 +1,7 @@
 ﻿using LauncherAPI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -12,7 +13,25 @@ namespace z3nth10n_Launcher
 {
     public partial class Form1 : Form
     {
-        private bool completedRevision = false;
+        private bool cmpRev = false;
+
+        private bool completedRevision
+        {
+            get
+            {
+                return cmpRev;
+            }
+            set
+            {
+                cmpRev = value;
+                if (cmpRev)
+                    RunMinecraft();
+            }
+        }
+
+        private DateTime lastTime;
+
+        private Image updatingLogo, launcherLogo;
 
         private static string minecraftJAR
         {
@@ -47,34 +66,66 @@ namespace z3nth10n_Launcher
             DL.downloader.Completed += Downloader_Completed;
 
             Console.WriteLine("Java Path: " + ApiLauncher.GetJavaInstallationPath());
+
+            lastTime = default(DateTime);
         }
 
         private void Downloader_Completed(object sender, EventArgs e)
         {
+            foreach (var kv in dateTime)
+                Console.WriteLine("Key: {0}: Value: {1}", kv.Key, kv.Value);
+
             lblProgress.Text = "Download completed!!";
+
+            RunMinecraft();
+        }
+
+        private void RunMinecraft()
+        {
             if (completedRevision)
             {
                 //Execute here Minecraft... WIP (resolution and position)
+                Console.WriteLine("Running minecraft!");
+                Process.Start(ApiLauncher.GenerateLaunchProccess(txtUsername.Text, minecraftJAR, true));
             }
         }
 
+        private Dictionary<string, int> dateTime = new Dictionary<string, int>();
+
         private void Downloader_ProgressChanged(object sender, EventArgs e)
         {
-            try
+            string fileName = DL.downloader.CurrentFile.Name;
+
+            if (!dateTime.ContainsKey(fileName))
+                dateTime.Add(fileName, 0);
+
+            if (dateTime[fileName] % (DL.downloader.CurrentFileSize > 1024 * 200 ? 40 : 5) == 0)
             {
-                progressBar1.Value = Convert.ToInt32(DL.downloader.CurrentFilePercentage());
-                lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)));
+                double pp = DL.downloader.CurrentFilePercentage(),
+                       percentage = pp == double.PositiveInfinity ? 100 : pp;
+
+                long fileSize = DL.downloader.CurrentFileSize == 0 ? DL.downloader.CurrentFileProgress : DL.downloader.CurrentFileSize;
+
+                progressBar1.Value = Convert.ToInt32(percentage);
+                lblProgress.Text = string.Format("Downloading packages => {0}\nRetrieving => {3} // {4} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, percentage.ToString("0.00"), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)), FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), FileDownloader.FormatSizeBinary(fileSize));
             }
-            catch
-            {
-                //This happens when cast from Convert.ToIne32 doesn't work as expected ... WIP
-            }
+
+            ++dateTime[fileName];
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(SM.Username))
-                txtUsername.Text = SM.Username; // WIP ... guardar varios usernames y mostrarlos en autocompletar
+                txtUsername.Text = SM.Username;
+
+            if (SM.Nicks != null && SM.Nicks.Count > 0)
+            {
+                AutoCompleteStringCollection collection = new AutoCompleteStringCollection();
+                collection.AddRange(SM.Nicks.Cast<string>().ToArray());
+                txtUsername.AutoCompleteCustomSource = collection;
+                txtUsername.AutoCompleteSource = AutoCompleteSource.CustomSource;
+                txtUsername.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
+            }
 
             pictureBox1.SizeMode = PictureBoxSizeMode.CenterImage;
             pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
@@ -115,27 +166,29 @@ namespace z3nth10n_Launcher
                 }
 
                 //Assign font
-                pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
-                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                updatingLogo = ApiBasics.DrawText("Updating Minecraft", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                launcherLogo = ApiBasics.DrawText("Minecraft Launcher", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
                 lblProgress.Font = isLinux ? arial : mRegular;
+
+                pictureBox1.Image = updatingLogo;
+                pictureBox2.Image = launcherLogo;
             }
             else
                 lblProgress.Font = arial;
 
-            lblNotifications.Text = CheckValidJar() ? "" : string.Format("You have to put this executable inside of a valid Minecraft folder, next to {0} file.", Path.GetFileName(minecraftJAR));
+            lblNotifications.Text = CheckValidJar();
         }
 
         //Funcs
 
-        private static bool CheckValidJar()
+        private static string CheckValidJar()
         {
-            if (!File.Exists(minecraftJAR)) return false;
-            else if (!ApiBasics.AssemblyFolderPATH.Contains("bin") || !ApiBasics.AssemblyFolderPATH.Contains("versions")) return false; //WIP ... Tengo que comprobar la version de la carpeta "versions"
+            if (!File.Exists(minecraftJAR)) return string.Format("File {0} doesn't exist!!", minecraftJAR);
+            else if (!ApiBasics.AssemblyFolderPATH.Split(ApiBasics.FolderDelimiter).Contains("bin") && !ApiBasics.AssemblyFolderPATH.Split(ApiBasics.FolderDelimiter).Contains("versions"))
+                return string.Format("Assembly isn't inside bin or version folder!"); //W-IP ... Tengo que comprobar la version de la carpeta "versions", ya me da igual, porq ahora este launcher se descarga el jar en la carpeta BIN (WIP) porque no tengo esto implementado al 100%
 
-            return ApiLauncher.IsValidJAR(minecraftJAR);
+            return !ApiLauncher.IsValidJAR(minecraftJAR) ? string.Format("You have to put this executable inside of a valid Minecraft folder, next to {0} file.", Path.GetFileName(minecraftJAR)) : "";
         }
-
-        private DateTime lastTime = DateTime.Now;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -144,7 +197,7 @@ namespace z3nth10n_Launcher
 
         private void button1_Click(object sender, EventArgs e)
         {
-            if ((DateTime.Now - lastTime).TotalMilliseconds > 2000)
+            if ((DateTime.Now - lastTime).TotalMilliseconds > 2000 || lastTime == default(DateTime))
             {
                 if (string.IsNullOrWhiteSpace(txtUsername.Text))
                 {
@@ -156,12 +209,21 @@ namespace z3nth10n_Launcher
                 }
                 else
                 {
+                    pictureBox2.Image = updatingLogo;
+                    lblProgress.Text = "Retrieving files...";
+
                     SM.Username = txtUsername.Text;
+                    SM.AddNick(txtUsername.Text);
+
                     pnlMain.SendToBack();
                     pnlMain.Visible = false;
 
                     string str = ApiLauncher.DownloadLibraries();
-                    completedRevision = string.IsNullOrEmpty(str);
+
+                    if (str == "nothing")
+                        Downloader_Completed(null, null);
+
+                    completedRevision = string.IsNullOrEmpty(str) || str == "nothing";
                     Console.WriteLine(completedRevision ? "Update completed succesfully! Now we have to run Minecraft..." : str);
                 }
 
