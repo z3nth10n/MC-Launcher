@@ -18,8 +18,16 @@ namespace z3nth10n_Launcher
         {
             get
             {
-                IEnumerable<FileInfo> obj = ApiLauncher.GetValidJars();
-                return obj == null ? Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar") : obj.ElementAt(0).FullName;
+                string defPath = Path.Combine(ApiBasics.AssemblyFolderPATH, "minecraft.jar");
+                try
+                {
+                    IEnumerable<FileInfo> obj = ApiLauncher.GetValidJars();
+                    return obj == null ? defPath : obj.ElementAt(0).FullName;
+                }
+                catch
+                {
+                    return defPath;
+                }
             }
         }
 
@@ -38,7 +46,7 @@ namespace z3nth10n_Launcher
             DL.downloader.ProgressChanged += Downloader_ProgressChanged;
             DL.downloader.Completed += Downloader_Completed;
 
-            Console.WriteLine("Java Path: " + Path.Combine(ApiLauncher.GetJavaInstallationPath(), "bin\\Java.exe"));
+            //Console.WriteLine("Java Path: " + Path.Combine(ApiLauncher.GetJavaInstallationPath(), "bin\\Java.exe"));
         }
 
         private void Downloader_Completed(object sender, EventArgs e)
@@ -83,28 +91,36 @@ namespace z3nth10n_Launcher
                     _off = false;
                 }
 
-            Font arial = new Font("Arial", 15);
+            Font arial = new Font("Arial", 15),
+                 arialBig = new Font("Arial", 30, FontStyle.Bold);
 
             if (!_off)
             {
-                MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
+                bool isLinux = ApiBasics.GetSO() == OS.Linux;
 
-                Font mBold = MemoryFonts.GetFont(0, 30),
+                Font mBold = null,
                      mRegular = null;
 
-                MemoryFonts.AddMemoryFont(Properties.Resources.MRegular);
+                if (!isLinux)
+                {
+                    MemoryFonts.AddMemoryFont(Properties.Resources.MBold);
 
-                mRegular = MemoryFonts.GetFont(0, 15);
+                    mBold = MemoryFonts.GetFont(0, 30);
+
+                    MemoryFonts.AddMemoryFont(Properties.Resources.MRegular);
+
+                    mRegular = MemoryFonts.GetFont(0, 15);
+                }
 
                 //Assign font
-                pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
-                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
-                lblProgress.Font = ApiBasics.GetSO() == OS.Linux ? arial : mRegular;
+                pictureBox1.Image = ApiBasics.DrawText("Minecraft Launcher", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                pictureBox2.Image = ApiBasics.DrawText("Updating Minecraft", isLinux ? arialBig : mBold, Color.FromArgb(255, 127, 127, 127), Color.Transparent);
+                lblProgress.Font = isLinux ? arial : mRegular;
             }
             else
                 lblProgress.Font = arial;
 
-            lblNotifications.Text = CheckValidJar() ? "" : "You have to put this executable inside of a valid Minecraft folder, next to minecraft.jar file.";
+            lblNotifications.Text = CheckValidJar() ? "" : string.Format("You have to put this executable inside of a valid Minecraft folder, next to {0} file.", Path.GetFileName(minecraftJAR));
         }
 
         //Funcs

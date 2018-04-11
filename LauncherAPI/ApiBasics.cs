@@ -286,6 +286,9 @@ namespace LauncherAPI
 
         public static OS GetSO()
         {
+#if MONO
+            return OS.Linux;
+#else
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 return OS.Linux;
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -294,6 +297,7 @@ namespace LauncherAPI
                 return OS.OSx;
             else
                 return OS.Other;
+#endif
         }
 
         public static bool RemoteFileExists(string url)

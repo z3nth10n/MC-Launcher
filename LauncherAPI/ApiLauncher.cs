@@ -290,7 +290,7 @@ namespace LauncherAPI
             //First we have to identify if we are on bin or in versions folder, to get the root
             string lPath = GetLibPath();
 
-            string forgeFile = Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Key);
+            string forgeFile = Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Key + ".jar");
             DownloadForgeLibraries(forgeFile, lPath, selVersion, jObject);
 
             //Then, with the JSON we will start to download libraries...
@@ -311,10 +311,18 @@ namespace LauncherAPI
 
         private static void DownloadForgeLibraries(string forgeFile, string lPath, KeyValuePair<string, string> selVersion, JObject jObject)
         {
+            if (!forgeFile.EndsWith(".jar"))
+                forgeFile += ".jar";
+            else if (forgeFile.EndsWith(".jar.jar"))
+                forgeFile = forgeFile.Replace(".jar.jar", ".jar");
+
+            if (!File.Exists(forgeFile))
+                DL.DownloadSyncFile(forgeFile, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", selVersion.Value));
+            
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -472,6 +480,10 @@ namespace LauncherAPI
             bool exists = File.Exists(ApiBasics.Base64PATH),
                  isConsole = ApiBasics.IsConsole;
 
+#if MONO
+            isConsole = false;
+#endif
+
             if (exists || !isConsole)
             {
                 JArray jArr = isConsole ? JsonConvert.DeserializeObject<JArray>(File.ReadAllText(ApiBasics.Base64PATH)) : null;
@@ -482,6 +494,9 @@ namespace LauncherAPI
                 else
                 {
                     Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
+
+                    //Console.WriteLine("jArr: {0}", jArr.ToString());
+                    //Console.WriteLine("filver Count: {0}", filver.Count);
 
                     if (isConsole)
                     {
@@ -506,7 +521,25 @@ namespace LauncherAPI
                             return "Please specify a numeric value.";
                     }
                     else
-                        selVersion = filver.ElementAt(0);
+                    {
+                        if (filver.Count == 0)
+                        {
+                            Console.WriteLine("There aren't any JAR on the folder; downloading latest jar...");
+                            using (WebClient wc = new WebClient())
+                            {
+                                JObject jManifest = JObject.Parse(wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"));
+
+                                string latestVer = jManifest["latest"]["release"].ToString(),
+                                       jarPath = Path.Combine(ApiBasics.AssemblyFolderPATH, latestVer + ".jar");
+
+                                DL.DownloadSyncFile(jarPath, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", latestVer));
+
+                                selVersion = new KeyValuePair<string, string>(Path.GetFileName(jarPath), latestVer);
+                            }
+                        }
+                        else
+                            selVersion = filver.ElementAt(0);
+                    }
                 }
             }
             else
