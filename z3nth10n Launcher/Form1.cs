@@ -66,7 +66,9 @@ namespace z3nth10n_Launcher
                 lblProgress.Text = string.Format("Downloading packages\nRetrieving: {0} ({1}%) @ {2}", DL.downloader.CurrentFile.Name, FileDownloader.FormatSizeBinary(DL.downloader.CurrentFileProgress), string.Format("{0}/s", FileDownloader.FormatSizeBinary(DL.downloader.DownloadSpeed)));
             }
             catch
-            { }
+            {
+                //This happens when cast from Convert.ToIne32 doesn't work as expected ... WIP
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)

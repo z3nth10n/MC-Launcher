@@ -8,6 +8,7 @@ using System.Linq;
 using System.Media;
 using System.Net;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -373,7 +374,7 @@ namespace LauncherAPI
 
             try
             {
-                return dictionary.Where(x => x.Value).FirstOrDefault().Key;
+                return dictionary.FirstOrDefault(x => x.Value).Key;
             }
             catch
             {

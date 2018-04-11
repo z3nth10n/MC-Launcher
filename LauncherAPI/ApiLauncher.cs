@@ -22,7 +22,7 @@ namespace LauncherAPI
 
         public static T ReadJAR<T>(string path, Func<ZipFile, ZipEntry, bool, T> jarAction, Func<ZipEntry, bool> func = null)
         {
-            T v = default(T);
+            T v = default;
             using (var zip = new ZipInputStream(File.OpenRead(path)))
             {
                 using (ZipFile zipfile = new ZipFile(path))
@@ -318,7 +318,7 @@ namespace LauncherAPI
 
             if (!File.Exists(forgeFile))
                 DL.DownloadSyncFile(forgeFile, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", selVersion.Value));
-            
+
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
@@ -473,9 +473,9 @@ namespace LauncherAPI
             return files;
         }
 
-        private static object GetSelVersion(IEnumerable<string> rvers, JObject jObj)
+        private static object GetSelVersion(IEnumerable<string> rvers, JObject jObj, bool forceDownload = true)
         {
-            KeyValuePair<string, string> selVersion;
+            KeyValuePair<string, string> selVersion = default;
 
             bool exists = File.Exists(ApiBasics.Base64PATH),
                  isConsole = ApiBasics.IsConsole;
@@ -494,9 +494,6 @@ namespace LauncherAPI
                 else
                 {
                     Dictionary<string, string> filver = jArr.Cast<JToken>().ToDictionary(x => x["filename"].ToString(), x => x["version"].ToString());
-
-                    //Console.WriteLine("jArr: {0}", jArr.ToString());
-                    //Console.WriteLine("filver Count: {0}", filver.Count);
 
                     if (isConsole)
                     {
@@ -524,17 +521,20 @@ namespace LauncherAPI
                     {
                         if (filver.Count == 0)
                         {
-                            Console.WriteLine("There aren't any JAR on the folder; downloading latest jar...");
-                            using (WebClient wc = new WebClient())
+                            if (forceDownload)
                             {
-                                JObject jManifest = JObject.Parse(wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"));
+                                Console.WriteLine("There aren't any JAR on the folder; downloading latest jar...");
+                                using (WebClient wc = new WebClient())
+                                {
+                                    JObject jManifest = JObject.Parse(wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"));
 
-                                string latestVer = jManifest["latest"]["release"].ToString(),
-                                       jarPath = Path.Combine(ApiBasics.AssemblyFolderPATH, latestVer + ".jar");
+                                    string latestVer = jManifest["latest"]["release"].ToString(),
+                                           jarPath = Path.Combine(ApiBasics.AssemblyFolderPATH, latestVer + ".jar");
 
-                                DL.DownloadSyncFile(jarPath, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", latestVer));
+                                    DL.DownloadSyncFile(jarPath, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", latestVer));
 
-                                selVersion = new KeyValuePair<string, string>(Path.GetFileName(jarPath), latestVer);
+                                    selVersion = new KeyValuePair<string, string>(Path.GetFileName(jarPath), latestVer);
+                                }
                             }
                         }
                         else
@@ -665,7 +665,7 @@ namespace LauncherAPI
             if (dump)
                 return AddObject(file.Name, validKey);
             else
-                return default(JObject);
+                return default;
         }
 
         public static JObject AddObject(string filename, string version)
