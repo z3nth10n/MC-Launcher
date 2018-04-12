@@ -695,7 +695,7 @@ namespace LauncherAPI
             Console.WriteLine();
         }
 
-        public static ProcessStartInfo GenerateLaunchProccess(string username, string minecraftJar, bool redirectOutput = false)
+        public static ProcessStartInfo GenerateLaunchProccess(string username, string minecraftJar)
         {
             ProcessStartInfo startInfo = new ProcessStartInfo(GetJavaInstallationPath());
 
@@ -707,13 +707,14 @@ namespace LauncherAPI
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
                                             username, "{ }");
 
-            if (redirectOutput)
+            //Esto lo modifica el ConsoleControl
+            /*if (redirectOutput)
             {
                 startInfo.RedirectStandardOutput = true;
                 startInfo.UseShellExecute = false;
 
                 Console.WriteLine(startInfo.Arguments);
-            }
+            }*/
 
             return startInfo;
         }

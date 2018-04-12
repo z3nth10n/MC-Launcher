@@ -86,7 +86,19 @@ namespace z3nth10n_Launcher
             {
                 //Execute here Minecraft... WIP (resolution and position)
                 Console.WriteLine("Running minecraft!");
-                Process.Start(ApiLauncher.GenerateLaunchProccess(txtUsername.Text, minecraftJAR, true));
+
+                using (Process p = consoleControl1.StartProcess(ApiLauncher.GenerateLaunchProccess(txtUsername.Text, minecraftJAR)))
+                {
+                    using (StreamReader sr = p.StandardOutput)
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            string output = sr.ReadLine();
+                            if (!string.IsNullOrEmpty(output))
+                                consoleControl1.WriteOutput(output, Color.White);
+                        }
+                    }
+                }
             }
         }
 
@@ -217,6 +229,9 @@ namespace z3nth10n_Launcher
 
                     pnlMain.SendToBack();
                     pnlMain.Visible = false;
+
+                    //tabControl1.SendToBack();
+                    //tabControl1.Visible = false;
 
                     string str = ApiLauncher.DownloadLibraries();
 

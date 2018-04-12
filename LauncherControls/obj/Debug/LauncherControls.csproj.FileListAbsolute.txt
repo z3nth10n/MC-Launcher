@@ -1,0 +1,7 @@
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\obj\Debug\ConsoleControl.ConsoleControl.resources
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\obj\Debug\LauncherControls.csproj.GenerateResource.Cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\obj\Debug\LauncherControls.csproj.CoreCompileInputs.cache
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\bin\Debug\LauncherControls.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\bin\Debug\LauncherControls.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\obj\Debug\LauncherControls.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\LauncherControls\obj\Debug\LauncherControls.pdb

@@ -98,3 +98,5 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\Newtonsoft.Json.dll
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\LauncherAPI.pdb
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\Newtonsoft.Json.xml
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\LauncherControls.dll
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\LauncherControls.pdb

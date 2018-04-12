@@ -1,4 +1,6 @@
-﻿namespace z3nth10n_Launcher
+﻿using LauncherControls.Controls.FixedVisualStyles;
+
+namespace z3nth10n_Launcher
 {
     partial class Form1
     {
@@ -28,6 +30,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.tabControl1 = new FixedTabControl();
+            this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pnlMain = new System.Windows.Forms.Panel();
             this.button4 = new System.Windows.Forms.Button();
             this.lblNotifications = new System.Windows.Forms.Label();
@@ -42,27 +46,58 @@
             this.button1 = new System.Windows.Forms.Button();
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.lblProgress = new System.Windows.Forms.Label();
-            this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.lblProgress = new System.Windows.Forms.Label();
+            this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.progressBar1 = new LauncherControls.Controls.FixedVisualStyles.FixedProgressBar();
+            this.consoleControl2 = new ConsoleControl.ConsoleControl();
+            this.tabControl1.SuspendLayout();
+            this.tabPage1.SuspendLayout();
             this.pnlMain.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
+            this.tabPage2.SuspendLayout();
             this.SuspendLayout();
+            // 
+            // tabControl1
+            // 
+            this.tabControl1.Controls.Add(this.tabPage1);
+            this.tabControl1.Controls.Add(this.tabPage2);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Name = "tabControl1";
+            this.tabControl1.SelectedIndex = 0;
+            this.tabControl1.Size = new System.Drawing.Size(854, 481);
+            this.tabControl1.TabIndex = 11;
+            // 
+            // tabPage1
+            // 
+            this.tabPage1.Controls.Add(this.pnlMain);
+            this.tabPage1.Controls.Add(this.pictureBox2);
+            this.tabPage1.Controls.Add(this.progressBar1);
+            this.tabPage1.Controls.Add(this.lblProgress);
+            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Name = "tabPage1";
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage1.Size = new System.Drawing.Size(846, 455);
+            this.tabPage1.TabIndex = 0;
+            this.tabPage1.Text = "Launcher";
+            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // pnlMain
             // 
             this.pnlMain.BackColor = System.Drawing.Color.Transparent;
+            this.pnlMain.BackgroundImage = global::z3nth10n_Launcher.Properties.Resources.dirt;
             this.pnlMain.Controls.Add(this.button4);
             this.pnlMain.Controls.Add(this.lblNotifications);
             this.pnlMain.Controls.Add(this.pictureBox1);
             this.pnlMain.Controls.Add(this.panel1);
             this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMain.Location = new System.Drawing.Point(0, 0);
+            this.pnlMain.Location = new System.Drawing.Point(3, 3);
             this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(854, 481);
-            this.pnlMain.TabIndex = 7;
+            this.pnlMain.Size = new System.Drawing.Size(840, 449);
+            this.pnlMain.TabIndex = 8;
             // 
             // button4
             // 
@@ -80,7 +115,7 @@
             this.lblNotifications.BackColor = System.Drawing.Color.Transparent;
             this.lblNotifications.Font = new System.Drawing.Font("Arial", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.lblNotifications.ForeColor = System.Drawing.Color.Red;
-            this.lblNotifications.Location = new System.Drawing.Point(14, 450);
+            this.lblNotifications.Location = new System.Drawing.Point(14, 419);
             this.lblNotifications.Name = "lblNotifications";
             this.lblNotifications.Size = new System.Drawing.Size(830, 23);
             this.lblNotifications.TabIndex = 10;
@@ -92,7 +127,7 @@
             this.pictureBox1.BackColor = System.Drawing.Color.Transparent;
             this.pictureBox1.Location = new System.Drawing.Point(14, 83);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(830, 75);
+            this.pictureBox1.Size = new System.Drawing.Size(821, 75);
             this.pictureBox1.TabIndex = 8;
             this.pictureBox1.TabStop = false;
             // 
@@ -189,7 +224,6 @@
             this.button1.TabIndex = 2;
             this.button1.Text = "Enter Game";
             this.button1.UseVisualStyleBackColor = false;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // txtUsername
             // 
@@ -210,36 +244,58 @@
             this.label2.TabIndex = 0;
             this.label2.Text = "Username:";
             // 
+            // pictureBox2
+            // 
+            this.pictureBox2.BackColor = System.Drawing.Color.Transparent;
+            this.pictureBox2.Location = new System.Drawing.Point(1, 67);
+            this.pictureBox2.Name = "pictureBox2";
+            this.pictureBox2.Size = new System.Drawing.Size(844, 91);
+            this.pictureBox2.TabIndex = 13;
+            this.pictureBox2.TabStop = false;
+            // 
             // lblProgress
             // 
             this.lblProgress.BackColor = System.Drawing.Color.Transparent;
             this.lblProgress.ForeColor = System.Drawing.SystemColors.ControlDark;
-            this.lblProgress.Location = new System.Drawing.Point(4, 263);
+            this.lblProgress.Location = new System.Drawing.Point(1, 257);
             this.lblProgress.Name = "lblProgress";
             this.lblProgress.Size = new System.Drawing.Size(844, 107);
-            this.lblProgress.TabIndex = 8;
+            this.lblProgress.TabIndex = 11;
             this.lblProgress.Text = "label1";
             this.lblProgress.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // tabPage2
+            // 
+            this.tabPage2.Controls.Add(this.consoleControl2);
+            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Name = "tabPage2";
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
+            this.tabPage2.Size = new System.Drawing.Size(846, 455);
+            this.tabPage2.TabIndex = 1;
+            this.tabPage2.Text = "Consola";
+            this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // progressBar1
             // 
             this.progressBar1.BackColor = System.Drawing.Color.Black;
             this.progressBar1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.progressBar1.Location = new System.Drawing.Point(7, 373);
+            this.progressBar1.Location = new System.Drawing.Point(4, 367);
             this.progressBar1.Name = "progressBar1";
             this.progressBar1.Size = new System.Drawing.Size(841, 10);
             this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressBar1.TabIndex = 9;
+            this.progressBar1.TabIndex = 12;
             this.progressBar1.Value = 50;
             // 
-            // pictureBox2
+            // consoleControl2
             // 
-            this.pictureBox2.BackColor = System.Drawing.Color.Transparent;
-            this.pictureBox2.Location = new System.Drawing.Point(4, 73);
-            this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(844, 91);
-            this.pictureBox2.TabIndex = 10;
-            this.pictureBox2.TabStop = false;
+            this.consoleControl2.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.consoleControl2.IsInputEnabled = true;
+            this.consoleControl2.Location = new System.Drawing.Point(3, 3);
+            this.consoleControl2.Name = "consoleControl2";
+            this.consoleControl2.SendKeyboardCommandsToProcess = false;
+            this.consoleControl2.ShowDiagnostics = false;
+            this.consoleControl2.Size = new System.Drawing.Size(840, 449);
+            this.consoleControl2.TabIndex = 0;
             // 
             // Form1
             // 
@@ -247,10 +303,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackgroundImage = global::z3nth10n_Launcher.Properties.Resources.dirt;
             this.ClientSize = new System.Drawing.Size(854, 481);
-            this.Controls.Add(this.pictureBox2);
-            this.Controls.Add(this.pnlMain);
-            this.Controls.Add(this.progressBar1);
-            this.Controls.Add(this.lblProgress);
+            this.Controls.Add(this.tabControl1);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
@@ -258,15 +311,19 @@
             this.Text = "Minecraft Launcher (z3nth10n Version - Anjocaid0 Reborn)";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
+            this.tabControl1.ResumeLayout(false);
+            this.tabPage1.ResumeLayout(false);
             this.pnlMain.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
+            this.tabPage2.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
-
+        private FixedTabControl tabControl1;
+        private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Button button4;
         private System.Windows.Forms.Label lblNotifications;
@@ -281,10 +338,12 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.TextBox txtUsername;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Label lblProgress;
-        private System.Windows.Forms.ProgressBar progressBar1;
+        private System.Windows.Forms.TabPage tabPage2;
+        private ConsoleControl.ConsoleControl consoleControl1;
         private System.Windows.Forms.PictureBox pictureBox2;
-        //private Controls.ColorProgressBar progressBar1;
+        private FixedProgressBar progressBar1;
+        private System.Windows.Forms.Label lblProgress;
+        private ConsoleControl.ConsoleControl consoleControl2;
 
         #endregion
         //private System.Windows.Forms.WebBrowser webBrowser1;

@@ -151,6 +151,10 @@
       <Project>{48542AF4-E87B-4054-87F6-BF1B340884AF}</Project>
       <Name>LauncherAPI</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LauncherControls\LauncherControls.csproj">
+      <Project>{25b43958-7b04-4c86-aace-928cdab26edb}</Project>
+      <Name>LauncherControls</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
