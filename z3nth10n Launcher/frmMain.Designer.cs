@@ -2,7 +2,7 @@
 
 namespace z3nth10n_Launcher
 {
-    partial class Form1
+    partial class frmMain
     {
         /// <summary>
         /// Required designer variable.
@@ -30,7 +30,7 @@ namespace z3nth10n_Launcher
         /// </summary>
         private void InitializeComponent()
         {
-            this.tabControl1 = new FixedTabControl();
+            this.tabControl1 = new LauncherControls.Controls.FixedVisualStyles.FixedTabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pnlMain = new System.Windows.Forms.Panel();
             this.button4 = new System.Windows.Forms.Button();
@@ -47,9 +47,9 @@ namespace z3nth10n_Launcher
             this.txtUsername = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
+            this.progressBar1 = new LauncherControls.Controls.FixedVisualStyles.FixedProgressBar();
             this.lblProgress = new System.Windows.Forms.Label();
             this.tabPage2 = new System.Windows.Forms.TabPage();
-            this.progressBar1 = new LauncherControls.Controls.FixedVisualStyles.FixedProgressBar();
             this.consoleControl2 = new ConsoleControl.ConsoleControl();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -65,25 +65,30 @@ namespace z3nth10n_Launcher
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.tabControl1.DrawMode = System.Windows.Forms.TabDrawMode.OwnerDrawFixed;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(0);
+            this.tabControl1.myBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(37)))), ((int)(((byte)(26)))), ((int)(((byte)(18)))));
             this.tabControl1.Name = "tabControl1";
+            this.tabControl1.Padding = new System.Drawing.Point(0, 0);
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(854, 481);
+            this.tabControl1.tabHeaderColor = System.Drawing.Color.White;
             this.tabControl1.TabIndex = 11;
             // 
             // tabPage1
             // 
+            this.tabPage1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(45)))), ((int)(((byte)(32)))), ((int)(((byte)(22)))));
             this.tabPage1.Controls.Add(this.pnlMain);
             this.tabPage1.Controls.Add(this.pictureBox2);
             this.tabPage1.Controls.Add(this.progressBar1);
             this.tabPage1.Controls.Add(this.lblProgress);
-            this.tabPage1.Location = new System.Drawing.Point(4, 22);
+            this.tabPage1.Location = new System.Drawing.Point(4, 25);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(0);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage1.Size = new System.Drawing.Size(846, 455);
+            this.tabPage1.Size = new System.Drawing.Size(846, 452);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Launcher";
-            this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // pnlMain
             // 
@@ -94,9 +99,10 @@ namespace z3nth10n_Launcher
             this.pnlMain.Controls.Add(this.pictureBox1);
             this.pnlMain.Controls.Add(this.panel1);
             this.pnlMain.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.pnlMain.Location = new System.Drawing.Point(3, 3);
+            this.pnlMain.Location = new System.Drawing.Point(0, 0);
+            this.pnlMain.Margin = new System.Windows.Forms.Padding(0);
             this.pnlMain.Name = "pnlMain";
-            this.pnlMain.Size = new System.Drawing.Size(840, 449);
+            this.pnlMain.Size = new System.Drawing.Size(846, 452);
             this.pnlMain.TabIndex = 8;
             // 
             // button4
@@ -253,6 +259,17 @@ namespace z3nth10n_Launcher
             this.pictureBox2.TabIndex = 13;
             this.pictureBox2.TabStop = false;
             // 
+            // progressBar1
+            // 
+            this.progressBar1.BackColor = System.Drawing.Color.Black;
+            this.progressBar1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
+            this.progressBar1.Location = new System.Drawing.Point(4, 367);
+            this.progressBar1.Name = "progressBar1";
+            this.progressBar1.Size = new System.Drawing.Size(841, 10);
+            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
+            this.progressBar1.TabIndex = 12;
+            this.progressBar1.Value = 50;
+            // 
             // lblProgress
             // 
             this.lblProgress.BackColor = System.Drawing.Color.Transparent;
@@ -266,25 +283,14 @@ namespace z3nth10n_Launcher
             // 
             // tabPage2
             // 
+            this.tabPage2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(33)))), ((int)(((byte)(33)))));
             this.tabPage2.Controls.Add(this.consoleControl2);
-            this.tabPage2.Location = new System.Drawing.Point(4, 22);
+            this.tabPage2.Location = new System.Drawing.Point(4, 25);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPage2.Size = new System.Drawing.Size(846, 455);
+            this.tabPage2.Size = new System.Drawing.Size(846, 452);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Consola";
-            this.tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // progressBar1
-            // 
-            this.progressBar1.BackColor = System.Drawing.Color.Black;
-            this.progressBar1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(192)))), ((int)(((byte)(0)))));
-            this.progressBar1.Location = new System.Drawing.Point(4, 367);
-            this.progressBar1.Name = "progressBar1";
-            this.progressBar1.Size = new System.Drawing.Size(841, 10);
-            this.progressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
-            this.progressBar1.TabIndex = 12;
-            this.progressBar1.Value = 50;
             // 
             // consoleControl2
             // 
@@ -294,10 +300,10 @@ namespace z3nth10n_Launcher
             this.consoleControl2.Name = "consoleControl2";
             this.consoleControl2.SendKeyboardCommandsToProcess = false;
             this.consoleControl2.ShowDiagnostics = false;
-            this.consoleControl2.Size = new System.Drawing.Size(840, 449);
+            this.consoleControl2.Size = new System.Drawing.Size(840, 446);
             this.consoleControl2.TabIndex = 0;
             // 
-            // Form1
+            // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -307,7 +313,7 @@ namespace z3nth10n_Launcher
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "Form1";
+            this.Name = "frmMain";
             this.Text = "Minecraft Launcher (z3nth10n Version - Anjocaid0 Reborn)";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -322,7 +328,7 @@ namespace z3nth10n_Launcher
             this.ResumeLayout(false);
 
         }
-        private FixedTabControl tabControl1;
+        private FixedTabControl tabControl1 = new LauncherControls.Controls.FixedVisualStyles.FixedTabControl();
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.Button button4;

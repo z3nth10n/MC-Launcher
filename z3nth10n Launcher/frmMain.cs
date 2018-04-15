@@ -1,4 +1,5 @@
 ﻿using LauncherAPI;
+using LauncherControls.Controls.FixedVisualStyles;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +12,7 @@ using DL = LauncherAPI.DownloadHelper;
 
 namespace z3nth10n_Launcher
 {
-    public partial class Form1 : Form
+    public partial class frmMain : Form
     {
         private bool cmpRev = false;
 
@@ -50,9 +51,11 @@ namespace z3nth10n_Launcher
             }
         }
 
-        public Form1()
+        public frmMain()
         {
             InitializeComponent();
+
+            var tab = new TabPadding(tabControl1);
 
             /*DL.downloader.StateChanged += Downloader_StateChanged;
             DL.downloader.CalculatingFileSize += Downloader_CalculatingFileSize;

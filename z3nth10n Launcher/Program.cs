@@ -17,7 +17,7 @@ namespace z3nth10n_Launcher
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            Application.Run(new frmMain());
 
             //Chk conn
             timer = new Timer(ApiBasics.ChkConn, null, 0, 1000 * 5 * 60);

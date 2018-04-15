@@ -86,7 +86,6 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\z3nth10n Launcher.exe
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\z3nth10n Launcher.pdb
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\MimeTypeMap.dll
-D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n_Launcher.Form1.resources
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n_Launcher.Properties.Resources.resources
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.csproj.GenerateResource.Cache
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n Launcher.csproj.CoreCompileInputs.cache
@@ -100,3 +99,4 @@ D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\Newtonsoft.Json.xml
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\LauncherControls.dll
 D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\bin\Debug\LauncherControls.pdb
+D:\VISUAL STUDIO\Visual Studio Projects\z3nth10n Launcher\z3nth10n Launcher\obj\x64\Debug\z3nth10n_Launcher.frmMain.resources
