@@ -7,3 +7,5 @@ error_reporting(E_ALL);
 include('Settings.php');
 
 $conn = mysqli_connect($dbserver, $dbuser, $dbpass, $dbname);
+
+include('core.php');

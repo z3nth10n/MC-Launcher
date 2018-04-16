@@ -29,10 +29,6 @@ $y = $bbox[1] + (imagesy($im) / 2) - ($bbox[5] / 2) - 5;
 // Escribirlo
 imagettftext($im, 30, 0, $x, $y, $negro, $fuente, $texto);
 
-//Aquí ya hacemos el contador de visitas
-
-//....
-
 // Establecer el tipo de contenido
 header('Content-Type: image/png');
 
