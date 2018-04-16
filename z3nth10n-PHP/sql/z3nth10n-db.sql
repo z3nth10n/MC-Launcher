@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 09-04-2018 a las 09:02:16
+-- Tiempo de generación: 16-04-2018 a las 09:41:56
 -- Versión del servidor: 10.1.31-MariaDB
 -- Versión de PHP: 5.6.34
 
@@ -25,6 +25,16 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Estructura de tabla para la tabla `actual_ccusers`
+--
+
+CREATE TABLE `actual_ccusers` (
+  `ccuser_qnt` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
 -- Estructura de tabla para la tabla `hourlystats`
 --
 
@@ -34,6 +44,26 @@ CREATE TABLE `hourlystats` (
   `launcher_hits` int(11) NOT NULL,
   `play_hits` int(11) NOT NULL,
   `maxccusers` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Volcado de datos para la tabla `hourlystats`
+--
+
+INSERT INTO `hourlystats` (`id`, `stat_date`, `launcher_hits`, `play_hits`, `maxccusers`) VALUES
+(0, 12, 0, 0, 0);
+
+-- --------------------------------------------------------
+
+--
+-- Estructura de tabla para la tabla `legacy_sessions`
+--
+
+CREATE TABLE `legacy_sessions` (
+  `id` int(11) NOT NULL,
+  `pc_id` text NOT NULL,
+  `session_token` text NOT NULL,
+  `session_length` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -93,6 +123,12 @@ CREATE TABLE `legacy_visitors` (
 --
 
 --
+-- Indices de la tabla `legacy_sessions`
+--
+ALTER TABLE `legacy_sessions`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indices de la tabla `legacy_users`
 --
 ALTER TABLE `legacy_users`
@@ -107,6 +143,12 @@ ALTER TABLE `legacy_visitors`
 --
 -- AUTO_INCREMENT de las tablas volcadas
 --
+
+--
+-- AUTO_INCREMENT de la tabla `legacy_sessions`
+--
+ALTER TABLE `legacy_sessions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT de la tabla `legacy_users`
