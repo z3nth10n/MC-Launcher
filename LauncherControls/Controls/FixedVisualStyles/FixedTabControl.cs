@@ -46,7 +46,6 @@ namespace LauncherControls.Controls.FixedVisualStyles
             ControlAdded += new ControlEventHandler(FixedTabControl_ControlAdded);
             ControlRemoved += new ControlEventHandler(FixedTabControl_ControlRemoved);
             SelectedIndexChanged += new EventHandler(FixedTabControl_SelectedIndexChanged);
-            DrawItem += FixedTabControl_DrawItem;
 
             leftRightImages = new ImageList();
             //leftRightImages.ImageSize = new Size(16, 16); // default
@@ -62,23 +61,6 @@ namespace LauncherControls.Controls.FixedVisualStyles
 
             if (DrawMode == TabDrawMode.Normal)
                 DrawMode = TabDrawMode.OwnerDrawFixed;
-        }
-
-        private void FixedTabControl_DrawItem(object sender, DrawItemEventArgs e)
-        {
-            TabControl tabControl1 = sender as TabControl;
-            using (Brush br = new SolidBrush(tabHeaderColor))
-            {
-                e.Graphics.FillRectangle(br, e.Bounds);
-                SizeF sz = e.Graphics.MeasureString(tabControl1.TabPages[e.Index].Text, e.Font);
-                e.Graphics.DrawString(tabControl1.TabPages[e.Index].Text, e.Font, Brushes.Black, e.Bounds.Left + (e.Bounds.Width - sz.Width) / 2, e.Bounds.Top + (e.Bounds.Height - sz.Height) / 2 + 1);
-
-                Rectangle rect = e.Bounds;
-                rect.Offset(0, 1);
-                rect.Inflate(0, -1);
-                e.Graphics.DrawRectangle(Pens.DarkGray, rect);
-                e.DrawFocusRectangle();
-            }
         }
 
         /// <summary>
@@ -277,7 +259,7 @@ namespace LauncherControls.Controls.FixedVisualStyles
             stringFormat.Alignment = StringAlignment.Center;
             stringFormat.LineAlignment = StringAlignment.Center;
 
-            br = new SolidBrush(tabPage.ForeColor);
+            br = new SolidBrush(tabHeaderColor);
 
             g.DrawString(tabPage.Text, Font, br, tabTextArea, stringFormat);
             //----------------------------
