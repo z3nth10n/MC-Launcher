@@ -34,7 +34,8 @@ namespace LauncherHelpers
             Console.WriteLine("2.- Try to identify a version");
             Console.WriteLine("3.- Download JSONs, libraries and natives");
             Console.WriteLine("4.- Get execution parameters");
-            Console.WriteLine("5.- Exit");
+            Console.WriteLine("5.- Work w/ Web API");
+            Console.WriteLine("6.- Exit");
             Console.WriteLine();
             Console.Write("Select what do you want to do: ");
             string c = Console.ReadLine();
@@ -100,6 +101,9 @@ namespace LauncherHelpers
                         break;
 
                     case 5:
+                        break;
+
+                    case 6:
                         Environment.Exit(0);
                         break;
 
