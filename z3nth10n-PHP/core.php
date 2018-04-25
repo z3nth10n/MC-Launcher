@@ -16,13 +16,20 @@ function getKeyName($arr, $value)
 
 function checkEmpty($arr, $value) 
 {
+	global $errors;
+
 	//Comprobamos si $value es null, y añades el error diciendo el nombre de la key para saber que variable es nula.
 
 	if(!isset($value)) 
 	{
 		$key = "emptyVar";
-		$errors["key"] = $key;
-		$errors["caption"] = getErrorCaption($key, $arr != null ? getKeyName($arr, $value) : $value);
+
+		$errorObj = array();
+
+		$errorObj["key"] = $key;
+		$errorObj["caption"] = getErrorCaption($key, $arr != null ? getKeyName($arr, $value) : $value);
+
+		$errors[] = $errorObj;
 
 		return true;
 	}
@@ -30,15 +37,31 @@ function checkEmpty($arr, $value)
 	return false;
 }
 
-function getErrorCaption($key, $vars) 
+function addError($key) 
+{
+	global $errors;
+
+	$params = count(func_get_args()) > 1 ? array_slice(func_get_args(), 1) : null;
+
+	$errorObj = array();
+
+	$errorObj["key"] = $key;
+	$errorObj["caption"] = $params != null ? getErrorCaption($key, $params) : getErrorCaption($key);
+
+	$errors[] = $errorObj;
+}
+
+function getErrorCaption($key) 
 {
 	global $Error;
 
-	return StrFormat($Error[$key], array_slice(func_get_args(), 1));
+	return StrFormat($Error[$key], array_slice(func_get_args(), 1)[0]);
 }
 
 function getErrors() 
 {
+    global $errors;
+
 	return $errors;
 }
 
@@ -48,9 +71,11 @@ $coreArray = array();
 
 function showJson($data) 
 {
+    global $errors;
+
 	//Prepare array...
 
-	if(isset($errors)) 
+	if(isset($errors) && count($errors) > 0)
 	{
 		$coreArray["errors"] = $errors;
 	}
@@ -59,10 +84,15 @@ function showJson($data)
 		$coreArray["success"] = true;
 	}
 
-	if(isset($data))
+	if(isset($data) && count($data) > 0)
 		$coreArray["data"] = $data;
 
 	return json_encode($coreArray, true);
+}
+
+function PrettyDump($data)
+{
+ 	return '<pre>' . var_export($data, true) . '</pre>';
 }
 
 function StrFormat()
@@ -76,6 +106,11 @@ function StrFormat()
         return $args[0];
 
     $str = array_shift($args);
+
+    //die(PrettyDump($args));
+
+    //if(is_array($args[0]))
+    //	$args = $args[0];
 
     if(count($args) == 2 && is_array($args[0]))
         $str = $args[0];

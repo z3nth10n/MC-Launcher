@@ -9,6 +9,8 @@ $arr = $isPost ? @$_POST : @$_GET;
 
 $action = $arr['action'];
 
+$defaultCase = false;
+
 if(!checkEmpty($arr, $action)) 
 {
 	switch ($reqMethod) {
@@ -74,7 +76,7 @@ if(!checkEmpty($arr, $action))
 					break;
 
 				default:
-					# code...
+					$defaultCase = true;
 					break;
 			}
 			break;
@@ -82,29 +84,30 @@ if(!checkEmpty($arr, $action))
 		case 'GET':
 			switch ($action) 
 			{
-				case 'handshake':
-					//We get here the token
+				case 'secret':
+					//We get here the token for every petition
 					//First step: give a random string and store it on a SecureString (C#)
 					//Second step: Generate a token in both (client & server) and validate client token with server one
 				
 					//Secret would be random string given from the first step of this case
-					$hmac = hash_hmac("sha256", "2012-10-01T17:48:56", "secret", true);
-					$hmac = base64_encode($hmac);
-					$coreData["token"] = $hmac;
+					$coreData["secret"] = bin2hex(openssl_random_pseudo_bytes(16));
 
 					//I should use free https to avoid security problems through sniffing packets
 					break;
 
 				default:
-					# code...
+					$defaultCase = true;
 					break;
 			}
 			break;
 		
 		default:
-			# code...
+			addError("undefinedMethod", $reqMethod);
 			break;
 	}
+
+	if($defaultCase)
+		addError("undefinedCase", $action, $reqMethod);
 }
 else 
 {

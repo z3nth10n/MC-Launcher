@@ -56,6 +56,8 @@ $Error = array(
     "queryError" => "{0}",
     "phpError" => "Error: [{0}] {1}\n\nFile: {2}:{3}\n\nTrace: {4}",
     "emptyVar" => "No se ha especificado un valor para '{0}'.",
+    "undefinedCase" => "Unknown '{0}' ('{1}') action!",
+    "undefinedMethod" => "Unknown '{0}' method used!",
     "hackTry" => "Hack try! With the following code: {0}"
 );
 
