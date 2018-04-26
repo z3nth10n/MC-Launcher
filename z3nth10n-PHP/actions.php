@@ -85,6 +85,8 @@ if(!checkEmpty($arr, $action))
 			switch ($action) 
 			{
 				case 'secret':
+				    //Aqui deberiamos usar algo de jwt
+
 					//We get here the token for every petition
 					//First step: give a random string and store it on a SecureString (C#)
 					//Second step: Generate a token in both (client & server) and validate client token with server one
