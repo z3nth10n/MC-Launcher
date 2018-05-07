@@ -8,7 +8,7 @@ function php_commit
     rm -rf "$file"
   done
 
-  cp -rf "$htdocs/." z3nth10n-PHP/
+  cp -rf "$htdocs/." z3nth10n-PHP/.
 
   read -p "[PHP] Commit message: " commit_msg
 
