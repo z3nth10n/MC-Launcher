@@ -97,6 +97,66 @@ if(!checkEmpty($arr, $action))
 					//I should use free https to avoid security problems through sniffing packets
 					break;
 
+                /*case 'pubkey':
+                    $pkGeneratePrivate = file_get_contents("private.key");
+
+                    // generate 2048-bit RSA key
+                    $pkGenerate = openssl_pkey_new(array(
+                        'private_key_bits' => 2048,
+                        'private_key_type' => OPENSSL_KEYTYPE_RSA
+                    ));
+
+                    // get the private key
+                    openssl_pkey_export($pkGenerate,$pkGeneratePrivate); // NOTE: second argument is passed by reference
+
+                    // get the public key
+                    $pkGenerateDetails = openssl_pkey_get_details($pkGenerate);
+                    $pkGeneratePublic = $pkGenerateDetails['key'];
+
+                    // free resources
+                    openssl_pkey_free($pkGenerate);
+
+                    // fetch/import public key from PEM formatted string
+                    // remember $pkGeneratePrivate now is PEM formatted...
+                    // this is an alternative method from the public retrieval in previous
+                    $pkImport = openssl_pkey_get_private($pkGeneratePrivate); // import
+                    $pkImportDetails = openssl_pkey_get_details($pkImport); // same as getting the public key in previous
+                    $pkImportPublic = $pkImportDetails['key'];
+                    openssl_pkey_free($pkImport); // clean up
+
+                    // let's see 'em
+                    echo "\n".$pkGeneratePrivate
+                        ."\n".$pkGeneratePublic
+                        ."\n".$pkImportPublic
+                        ."\n".'Public keys are '.(strcmp($pkGeneratePublic,$pkImportPublic)?'different':'identical').'.';
+                    break;*/
+
+                case "genkeys":
+                    include("includes/auth.php");
+
+                    $time_start = microtime(true);
+                    include('phpseclib/rsa_autoload.php');
+
+                    $rsa = new phpseclib\Crypt\RSA();
+                    //$rsa->setPublicKeyFormat(CRYPT_RSA_PUBLIC_FORMAT_OPENSSH);
+                    $result = $rsa->createKey(4096);
+
+                    $fp = fopen($privFile, 'w') or die("File not found!");
+                    fwrite($fp, $result["privatekey"]);
+                    fclose($fp);
+
+                    $fp = fopen($pubFile, 'w') or die("File not found!");
+                    fwrite($fp, $result["publickey"]);
+                    fclose($fp);
+
+                    $coreData["executionTime"] = (int)((microtime(true) - $time_start) * 1000);
+                    break;
+
+                case "pubkey":
+                    //$coreData["privKey"] = file_get_contents("keys/private.key");
+                    $coreData["pubKey"] = file_get_contents("keys/public.key");
+                    break;
+
 				default:
 					$defaultCase = true;
 					break;
