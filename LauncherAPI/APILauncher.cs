@@ -1,4 +1,4 @@
-﻿using ICSharpCode.SharpZipLib.Zip;
+using ICSharpCode.SharpZipLib.Zip;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -22,7 +22,7 @@ namespace LauncherAPI
 
         public static T ReadJAR<T>(string path, Func<ZipFile, ZipEntry, bool, T> jarAction, Func<ZipEntry, bool> func = null)
         {
-            T v = default(T);
+            T v = default;
             using (var zip = new ZipInputStream(File.OpenRead(path)))
             {
                 using (ZipFile zipfile = new ZipFile(path))
@@ -118,7 +118,7 @@ namespace LauncherAPI
             return libpath;
         }
 
-        public static string GetAllLibs(bool outputDebug = false)
+        public static string GetAllLibs(string filePath, bool outputDebug = false)
         {
             string libFolder = GetLibPath();
             StringBuilder ret = new StringBuilder();
@@ -127,8 +127,10 @@ namespace LauncherAPI
             foreach (string file in files)
             {
                 ret.Append(file);
-                if (files.Last() != file) ret.Append(";");
+                ret.Append(";");
             }
+
+            ret.Append(filePath);
 
             string rr = ret.ToString();
             if (!string.IsNullOrEmpty(rr))
@@ -290,7 +292,7 @@ namespace LauncherAPI
             //First we have to identify if we are on bin or in versions folder, to get the root
             string lPath = GetLibPath();
 
-            string forgeFile = Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Key);
+            string forgeFile = Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Key + ".jar");
             DownloadForgeLibraries(forgeFile, lPath, selVersion, jObject);
 
             //Then, with the JSON we will start to download libraries...
@@ -304,17 +306,32 @@ namespace LauncherAPI
             else
                 return "Invalid instalation path, please move this executable next to a valid JAR file (minecraft.jar, forge.jar, etc...)";
 
-            DL.downloader.Start();
+            if (DL.downloader.Files.Count > 0)
+                DL.downloader.Start();
+            else
+            {
+                Console.WriteLine("Nothing to download!!");
+                return "nothing";
+            }
 
             return "";
         }
 
         private static void DownloadForgeLibraries(string forgeFile, string lPath, KeyValuePair<string, string> selVersion, JObject jObject)
         {
+            if (!forgeFile.EndsWith(".jar"))
+                forgeFile += ".jar";
+            else if (forgeFile.EndsWith(".jar.jar"))
+                forgeFile = forgeFile.Replace(".jar.jar", ".jar");
+
+            //Aquí solucionamos el W-IP del GetSelVersion que venía del KnownVersion
+            if (!File.Exists(forgeFile))
+                DL.DownloadSyncFile(forgeFile, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", selVersion.Value));
+
             if (!IsValidJAR(forgeFile))
             {
                 //If, ie, this is a forge jar, we need to download the original minecraft version
-                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value + ".jar"), jObject["downloads"]["client"]["url"].ToString());
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, selVersion.Value), jObject["downloads"]["client"]["url"].ToString());
 
                 //Check if this a forge version
                 JObject forgeObj = GetForgeVersion(forgeFile);
@@ -385,7 +402,7 @@ namespace LauncherAPI
             Console.WriteLine();
         }
 
-        private static void DownloadNatives(string nativesDir)
+        private static void DownloadNatives(string nativesDir, bool nativesJar = false)
         {
             //Generate natives
             switch (ApiBasics.GetSO())
@@ -431,10 +448,13 @@ namespace LauncherAPI
 
             //Download common jars...
 
-            string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
-            DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            if (nativesJar)
+            { //WIP ... esto no tiene que ver
+                string jarNativesUrl = "https://github.com/ZZona-Dummies/MC-Dependencies/raw/master/JarNatives";
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "jinput.jar"), string.Format("{0}/jinput.jar", jarNativesUrl));
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl.jar"), string.Format("{0}/lwjgl.jar", jarNativesUrl));
+                DL.DownloadFile(Path.Combine(ApiBasics.AssemblyFolderPATH, "lwjgl_util.jar"), string.Format("{0}/lwjgl_util.jar", jarNativesUrl));
+            }
         }
 
         public static IEnumerable<FileInfo> GenerateBase64File(IEnumerable<string> rvers, JObject jobj)
@@ -465,12 +485,16 @@ namespace LauncherAPI
             return files;
         }
 
-        private static object GetSelVersion(IEnumerable<string> rvers, JObject jObj)
+        private static object GetSelVersion(IEnumerable<string> rvers, JObject jObj, bool forceDownload = true)
         {
-            KeyValuePair<string, string> selVersion;
+            KeyValuePair<string, string> selVersion = default;
 
             bool exists = File.Exists(ApiBasics.Base64PATH),
                  isConsole = ApiBasics.IsConsole;
+
+#if MONO
+            isConsole = false;
+#endif
 
             if (exists || !isConsole)
             {
@@ -506,7 +530,28 @@ namespace LauncherAPI
                             return "Please specify a numeric value.";
                     }
                     else
-                        selVersion = filver.ElementAt(0);
+                    {
+                        if (filver.Count == 0)
+                        {
+                            if (forceDownload)
+                            {
+                                Console.WriteLine("There aren't any JAR on the folder; downloading latest jar...");
+                                using (WebClient wc = new WebClient())
+                                {
+                                    JObject jManifest = JObject.Parse(wc.DownloadString("https://launchermeta.mojang.com/mc/game/version_manifest.json"));
+
+                                    string latestVer = jManifest["latest"]["release"].ToString(),
+                                           jarPath = Path.Combine(ApiBasics.AssemblyFolderPATH, latestVer + ".jar");
+
+                                    DL.DownloadSyncFile(jarPath, string.Format("https://s3.amazonaws.com/Minecraft.Download/versions/{0}/{0}.jar", latestVer));
+
+                                    selVersion = new KeyValuePair<string, string>(Path.GetFileName(jarPath), latestVer);
+                                }
+                            }
+                        }
+                        else
+                            selVersion = filver.ElementAt(0);
+                    }
                 }
             }
             else
@@ -516,7 +561,7 @@ namespace LauncherAPI
                 string version = Console.ReadLine();
 
                 if (rvers.Contains(version))
-                    selVersion = new KeyValuePair<string, string>(version, version); //Aqui habia un WIP no se ni por qué
+                    selVersion = new KeyValuePair<string, string>(version + ".jar", version);
                 else
                     return "Unrecognized versions, please restart...";
             }
@@ -632,7 +677,7 @@ namespace LauncherAPI
             if (dump)
                 return AddObject(file.Name, validKey);
             else
-                return default(JObject);
+                return default;
         }
 
         public static JObject AddObject(string filename, string version)
@@ -650,59 +695,71 @@ namespace LauncherAPI
             Console.WriteLine();
         }
 
-        public static ProcessStartInfo GenerateLaunchProccess()
+        public static ProcessStartInfo GenerateLaunchProccess(string username, string minecraftJar)
         {
-            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(GetJavaInstallationPath(), "bin\\Java.exe")); //WIP ... tengo que ver si el metodo usado funciona de verdad
+            ProcessStartInfo startInfo = new ProcessStartInfo(GetJavaInstallationPath());
 
-            startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates = true -Dfml.ignorePatchDiscrepancies = true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
+            startInfo.Arguments = string.Format(@"-Xmx{0}M -Xms{1}M -Xmn{1}M -Djava.library.path=""{2}"" -cp ""{3}"" -Dfml.ignoreInvalidMinecraftCertificates=true -Dfml.ignorePatchDiscrepancies=true -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:-UseAdaptiveSizePolicy net.minecraft.client.main.Main --accessToken FML --userProperties {6} --version {4} --username {5}",
                                             (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 2)),
                                             (ulong)(ApiBasics.GetTotalMemoryInBytes() / (Math.Pow(1024, 2) * 16)),
                                             Path.Combine(ApiBasics.AssemblyFolderPATH, "natives"),
-                                            GetAllLibs(),
+                                            GetAllLibs(minecraftJar),
                                             GetVersionFromMinecraftJar(GetValidJars().ElementAt(0).FullName),
-                                            "username --> txtUsername.Text", "{ }");
-            startInfo.RedirectStandardOutput = true;
+                                            username, "{ }");
+
+            //Esto lo modifica el ConsoleControl
+            /*if (redirectOutput)
+            {
+                startInfo.RedirectStandardOutput = true;
+                startInfo.UseShellExecute = false;
+
+                Console.WriteLine(startInfo.Arguments);
+            }*/
 
             return startInfo;
         }
 
         public static string GetJavaInstallationPath()
         {
-            string environmentPath = Environment.GetEnvironmentVariable("JAVA_HOME");
-            if (!string.IsNullOrEmpty(environmentPath))
+            if (ApiBasics.GetSO() == OS.Linux)
             {
-                return environmentPath;
+                return ApiBasics.ExecuteBashCommand("readlink -f $(which java)");
             }
-
-            const string JAVA_KEY = "SOFTWARE\\JavaSoft\\Java Runtime Environment\\";
-
-            var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-            using (var rk = localKey.OpenSubKey(JAVA_KEY))
+            else if (ApiBasics.GetSO() == OS.Windows)
             {
-                if (rk != null)
+                string environmentPath = Environment.GetEnvironmentVariable("JAVA_HOME");
+                if (!string.IsNullOrEmpty(environmentPath))
                 {
-                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
-                    using (var key = rk.OpenSubKey(currentVersion))
-                    {
-                        return key.GetValue("JavaHome").ToString();
-                    }
+                    return environmentPath;
                 }
-            }
 
-            localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
-            using (var rk = localKey.OpenSubKey(JAVA_KEY))
-            {
-                if (rk != null)
-                {
-                    string currentVersion = rk.GetValue("CurrentVersion").ToString();
-                    using (var key = rk.OpenSubKey(currentVersion))
+                const string JAVA_KEY = "SOFTWARE\\JavaSoft\\Java Runtime Environment\\";
+                string javaPath = "";
+
+                var localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+                using (var rk = localKey.OpenSubKey(JAVA_KEY))
+                    if (rk != null)
                     {
-                        return key.GetValue("JavaHome").ToString();
+                        string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                        using (var key = rk.OpenSubKey(currentVersion))
+                            javaPath = key.GetValue("JavaHome").ToString();
                     }
-                }
-            }
 
-            return null;
+                localKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+                using (var rk = localKey.OpenSubKey(JAVA_KEY))
+                    if (rk != null)
+                    {
+                        string currentVersion = rk.GetValue("CurrentVersion").ToString();
+                        using (var key = rk.OpenSubKey(currentVersion))
+                        {
+                            javaPath = key.GetValue("JavaHome").ToString();
+                        }
+                    }
+
+                return !string.IsNullOrEmpty(javaPath) ? Path.Combine(javaPath, "bin\\Java.exe") : "";
+            }
+            else
+                return null;
         }
 
         public static string GetLogoStr(string text = "Minecraft Launcher", string font = "MBold.ttf", int size = 30)

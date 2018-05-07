@@ -1,13 +1,21 @@
 #!/bin/bash
 fpath="z3nth10n-PHP"
-yes | cp -rf /c/xampp/htdocs/z3nth10n-PHP/ "$fpath"
+htdocs="/c/xampp/htdocs/z3nth10n-PHP"
 
 function php_commit 
 {
-  read -p "Commit message: " commit_msg
+  for file in $(find "$fpath" -type f | grep -wv ".git"); do
+    rm -rf "$file"
+  done
+
+  cp -rf "$htdocs/." z3nth10n-PHP/
+
+  read -p "[PHP] Commit message: " commit_msg
+
   if [[ ! -z `git -C "$fpath" diff HEAD .gitignore` ]]; then
     git -C "$fpath" rm -rf --cached .
   fi
+
   git -C "$fpath" add --all
   git -C "$fpath" commit -m "$commit_msg"
   git -C "$fpath" push -u origin master
@@ -15,10 +23,12 @@ function php_commit
 
 function main_commit 
 {
-  read -p "Commit message for this repo: " commit_msg
+  read -p "[Main] Commit message: " commit_msg
+
   if [[ ! -z `git diff HEAD .gitignore` ]]; then
     git -C "$fpath" rm -rf --cached .
   fi
+
   git add --all
   git commit -m "$commit_msg"
   git push -u origin master
