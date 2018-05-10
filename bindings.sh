@@ -9,6 +9,12 @@ function php_commit
   done
 
   cp -rf "$htdocs/." z3nth10n-PHP/.
+  cp z3nth10n-PHP/keys/private.key z3nth10n-PHP/keys/private.txt
+  cp z3nth10n-PHP/keys/public.key z3nth10n-PHP/keys/public.txt
+  cp z3nth10n-PHP/keys/private-seclib.key z3nth10n-PHP/keys/private-seclib.txt
+  cp z3nth10n-PHP/keys/public-seclib.key z3nth10n-PHP/keys/public-seclib.txt
+  cp z3nth10n-PHP/keys/private-openssl.key z3nth10n-PHP/keys/private-openssl.txt
+  cp z3nth10n-PHP/keys/public-openssl.key z3nth10n-PHP/keys/public-openssl.txt
 
   read -p "[PHP] Commit message: " commit_msg
 
